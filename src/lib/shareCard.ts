@@ -33,31 +33,31 @@ export function downloadGymSummaryCard(s: GymSummaryShare) {
   ctx.direction = 'rtl';
   ctx.textAlign = 'right';
   const bg = ctx.createLinearGradient(0, 0, 1080, 1350);
-  bg.addColorStop(0, '#F5F7F8');
-  bg.addColorStop(1, '#DAF4FF');
+  bg.addColorStop(0, '#050505');
+  bg.addColorStop(1, '#151719');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, 1080, 1350);
 
-  ctx.fillStyle = '#10151B';
+  ctx.fillStyle = '#151719';
   ctx.beginPath();
   ctx.roundRect(90, 90, 900, 1170, 54);
   ctx.fill();
 
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = '#F7F7F7';
   ctx.font = '700 64px system-ui, -apple-system, sans-serif';
   ctx.fillText('45/4', 900, 205);
   ctx.font = '700 48px system-ui, -apple-system, sans-serif';
   ctx.fillText(`الكوتش / ${s.coach}`, 900, 310);
 
-  ctx.fillStyle = '#BDEEFF';
+  ctx.fillStyle = '#5598B0';
   ctx.font = '400 34px system-ui, -apple-system, sans-serif';
   ctx.fillText(s.dateLabel, 900, 372);
 
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = '#F7F7F7';
   ctx.font = '800 96px system-ui, -apple-system, sans-serif';
   ctx.fillText(s.durationLabel, 900, 560);
   ctx.font = '500 34px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#BDEEFF';
+  ctx.fillStyle = '#5598B0';
   ctx.fillText('وقت النادي', 900, 615);
 
   const rows: [string, string][] = [];
@@ -70,18 +70,19 @@ export function downloadGymSummaryCard(s: GymSummaryShare) {
     ctx.beginPath();
     ctx.roundRect(180, y - 78, 720, 104, 26);
     ctx.fill();
-    ctx.fillStyle = '#BDEEFF';
+    ctx.fillStyle = '#5598B0';
     ctx.font = '500 32px system-ui, -apple-system, sans-serif';
     ctx.fillText(label, 850, y - 12);
-    ctx.fillStyle = '#FFFFFF';
+    ctx.fillStyle = '#F7F7F7';
     ctx.textAlign = 'left';
     ctx.font = '800 44px system-ui, -apple-system, sans-serif';
     ctx.fillText(value, 230, y - 12);
     ctx.textAlign = 'right';
   });
 
-  ctx.fillStyle = '#BDEEFF';
+  ctx.fillStyle = '#5598B0';
   ctx.font = '500 28px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = '#1AA5C8';
   ctx.fillText('جلسة واحدة أفضل من لا شيء.', 900, 1190);
 
   const a = document.createElement('a');

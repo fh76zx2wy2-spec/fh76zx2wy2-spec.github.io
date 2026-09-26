@@ -13,37 +13,39 @@
 @font-face { font-family: 'Thmanyah Serif Display'; font-weight: 900; font-style: normal; font-display: swap; src: url('/fonts/thmanyahserifdisplay-Black.woff2') format('woff2'); }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
   --font-body: 'Thmanyah Sans', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
   --font-display: 'Thmanyah Serif Display', 'Thmanyah Sans', serif;
 
-  /* الألوان — فاتح */
-  --bg: #F5F7F8;
-  --bg-2: #EAF0F4;
-  --surface: #FFFFFF;
-  --surface-2: #F2F6F8;
-  --ink: #10151B;
-  --ink-2: #2B3640;
-  --muted: #63717D;
-  --line: #DCE3E8;
-  --line-2: #E8EEF2;
+  /* هوية B_FIT — فحم + أزرق + سماوي رياضي + كورال */
+  --bg: #050505;
+  --bg-2: #050505;
+  --surface: #151719;
+  --surface-2: #151719;
+  --ink: #F7F7F7;
+  --ink-2: #F7F7F7;
+  --muted: #929CA2;
+  --line: #303236;
+  --line-2: #303236;
 
-  --hot: #F42367;
-  --hot-deep: #B90E45;
-  --hot-soft: #FFE0EB;
-  --hot-ink: #A30D3D;
-  --cold: #00AEEF;
-  --cold-deep: #007DA7;
-  --cold-soft: #DAF4FF;
-  --cold-ink: #006D91;
-  --danger: #E23C4A;
-  --danger-soft: #FFE1E4;
-  --sand: #AAB7C2;
+  --cold: #5598B0;
+  --cold-deep: #5598B0;
+  --cold-soft: rgba(85, 152, 176, .16);
+  --cold-ink: #F7F7F7;
+  --sport: #1AA5C8;
+  --sport-soft: rgba(26, 165, 200, .16);
+  --hot: #EF5C66;
+  --hot-deep: #EF5C66;
+  --hot-soft: rgba(239, 92, 102, .15);
+  --hot-ink: #F7F7F7;
+  --danger: #EF5C66;
+  --danger-soft: rgba(239, 92, 102, .15);
+  --sand: #929CA2;
 
-  --shadow-1: 0 1px 2px rgba(16, 21, 27, .05), 0 8px 22px -12px rgba(16, 21, 27, .18);
-  --shadow-2: 0 2px 4px rgba(16, 21, 27, .07), 0 20px 44px -20px rgba(16, 21, 27, .30);
-  --shadow-hot: 0 16px 36px -16px rgba(0, 174, 239, .42);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .38), 0 8px 22px -12px rgba(0, 0, 0, .72);
+  --shadow-2: 0 2px 4px rgba(0, 0, 0, .46), 0 20px 44px -20px rgba(0, 0, 0, .82);
+  --shadow-hot: 0 16px 36px -16px rgba(26, 165, 200, .42);
 
   --r-sm: 12px;
   --r-md: 16px;
@@ -58,68 +60,27 @@
 
   --ease: cubic-bezier(.22, 1, .36, 1);
 
-  /* رسومات الأجهزة (مستخرجة من PDF ومعاد تلوينها) */
-  --tile: #EAF2F6;
-  --il-p: #00AEEF;
-  --il-p2: #007DA7;
-  --il-p3: #55CCF8;
-  --il-t: #F42367;
-  --il-m: #34424D;
-  --il-m2: #1B242C;
-  --il-g: #93A2AE;
-  --il-g2: #71818D;
-  --il-floor: #DDE7ED;
-  --il-floor2: #E9F0F4;
-  --il-mat: #8BDDF9;
-  --il-screen: #79D8FA;
-  --il-wave: #F4FCFF;
-  --il-water: #A8E7FB;
-  --il-water2: #5BC9EE;
+  /* رسومات الأجهزة */
+  --tile: #151719;
+  --il-p: #5598B0;
+  --il-p2: #1AA5C8;
+  --il-p3: #5598B0;
+  --il-t: #EF5C66;
+  --il-m: #929CA2;
+  --il-m2: #303236;
+  --il-g: #303236;
+  --il-g2: #929CA2;
+  --il-floor: #151719;
+  --il-floor2: #050505;
+  --il-mat: #5598B0;
+  --il-screen: #1AA5C8;
+  --il-wave: #F7F7F7;
+  --il-water: #5598B0;
+  --il-water2: #1AA5C8;
 }
 
-:root[data-theme='dark'] {
+/* نحافظ على مفتاح الوضع للتوافق، لكن الهوية الآن موحّدة داكنة في الوضعين */
+:root[data-theme='dark'],
+:root[data-theme='light'] {
   color-scheme: dark;
-
-  --bg: #0B0F13;
-  --bg-2: #070A0D;
-  --surface: #121820;
-  --surface-2: #19212A;
-  --ink: #F7FAFC;
-  --ink-2: #D6E0E7;
-  --muted: #9BAAB5;
-  --line: #27323C;
-  --line-2: #202A33;
-
-  --hot: #FF2E73;
-  --hot-deep: #C41350;
-  --hot-soft: rgba(255,46,115,.16);
-  --hot-ink: #FF7AA6;
-  --cold: #19C2FF;
-  --cold-deep: #008FBF;
-  --cold-soft: rgba(25,194,255,.16);
-  --cold-ink: #75DCFF;
-  --danger: #FF5964;
-  --danger-soft: rgba(255,89,100,.16);
-  --sand: #81919D;
-
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 18px -10px rgba(0, 0, 0, .6);
-  --shadow-2: 0 2px 4px rgba(0, 0, 0, .4), 0 18px 40px -18px rgba(0, 0, 0, .75);
-  --shadow-hot: 0 16px 34px -14px rgba(0, 0, 0, .7);
-
-  --tile: #151D24;
-  --il-p: #19C2FF;
-  --il-p2: #008FBF;
-  --il-p3: #66D8FF;
-  --il-t: #FF2E73;
-  --il-m: #A3B1BA;
-  --il-m2: #74828C;
-  --il-g: #44515B;
-  --il-g2: #667680;
-  --il-floor: #202A32;
-  --il-floor2: #182127;
-  --il-mat: #136E8E;
-  --il-screen: #32C9FF;
-  --il-wave: #BFEFFF;
-  --il-water: #0F526A;
-  --il-water2: #14779A;
 }

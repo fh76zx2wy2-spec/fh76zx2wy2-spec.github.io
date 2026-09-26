@@ -36,11 +36,11 @@ def icon_svg(pad=0.0, rounded=True):
     bar_y = o + inner * 0.585
     bar_w = inner * 0.60
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {S} {S}" width="{S}" height="{S}">
-<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#111820"/><stop offset="1" stop-color="#070A0D"/></linearGradient></defs>
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#151719"/><stop offset="1" stop-color="#050505"/></linearGradient></defs>
 <rect width="{S}" height="{S}" rx="{rx}" fill="url(#g)"/>
 <path d="{p45}" fill="#FFFFFF"/>
-<rect x="{S/2 - bar_w/2:.1f}" y="{bar_y:.1f}" width="{bar_w:.1f}" height="{inner*0.03:.1f}" rx="{inner*0.015:.1f}" fill="#F42367"/>
-<path d="{p4}" fill="#19C2FF"/>
+<rect x="{S/2 - bar_w/2:.1f}" y="{bar_y:.1f}" width="{bar_w:.1f}" height="{inner*0.03:.1f}" rx="{inner*0.015:.1f}" fill="#EF5C66"/>
+<path d="{p4}" fill="#5598B0"/>
 </svg>'''
 
 os.makedirs('public/icons', exist_ok=True)
