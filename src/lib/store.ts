@@ -333,6 +333,38 @@ export function deleteGymVisit(id: string) {
   });
 }
 
+/** تعديل وقت زيارة محفوظة من شاشة السجل. يعيد حساب التاريخ والمدة تلقائيًا. */
+export function updateGymVisit(id: string, patch: { arrived_at?: string; left_at?: string | null }): GymVisit | null {
+  const d = requireDB();
+  const old = d.visits.find((v) => v.id === id);
+  if (!old) return null;
+  const arrivedAt = patch.arrived_at ?? old.arrived_at;
+  const leftAt = patch.left_at === undefined ? old.left_at : patch.left_at;
+  const arrivedMs = Date.parse(arrivedAt);
+  const leftMs = leftAt ? Date.parse(leftAt) : null;
+  if (!Number.isFinite(arrivedMs) || (leftMs != null && (!Number.isFinite(leftMs) || leftMs < arrivedMs))) return null;
+  if (leftAt == null && d.visits.some((v) => v.id !== id && !v.left_at)) return null;
+  const row: GymVisit = {
+    ...old,
+    date: todayISO(new Date(arrivedAt)),
+    arrived_at: new Date(arrivedMs).toISOString(),
+    left_at: leftMs == null ? null : new Date(leftMs).toISOString(),
+    duration_seconds: leftMs == null ? 0 : Math.max(0, Math.round((leftMs - arrivedMs) / 1000)),
+    updated_at: nowIso(),
+  };
+  commit({
+    ...d,
+    visits: d.visits.map((v) => (v.id === id ? row : v)),
+    pending: enqueue(d.pending, { table: 'gym_visits', id, action: 'upsert' }),
+  });
+  return row;
+}
+
+/** تراجع سريع عن المغادرة: يعيد الزيارة إلى حالة «داخل النادي». */
+export function reopenGymVisit(id: string): GymVisit | null {
+  return updateGymVisit(id, { left_at: null });
+}
+
 export type AppleHealthInput = Omit<AppleHealthRecord, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
 
 /** يحفظ استيراد Apple Health كسجل مستقل تمامًا عن جلسات 45/4. */

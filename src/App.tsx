@@ -50,10 +50,10 @@ function ConfigMissing() {
 
 const NAV = [
   { to: '/', icon: 'home', label: 'الرئيسية', end: true },
-  { to: '/workout', icon: 'timer', label: 'التمرين' },
-  { to: '/calendar', icon: 'calendar', label: 'التقويم' },
+  { to: '/workout', icon: 'timer', label: 'تمرين اليوم' },
   { to: '/food', icon: 'plate', label: 'الأكل' },
-  { to: '/more', icon: 'grid', label: 'المزيد' },
+  { to: '/history', icon: 'calendar', label: 'السجل' },
+  { to: '/progress', icon: 'chart', label: 'الإحصاءات' },
 ] as const;
 
 function Shell() {

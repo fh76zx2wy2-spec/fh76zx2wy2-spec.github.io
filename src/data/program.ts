@@ -77,8 +77,8 @@ const LOWER_STRETCH = '5 دقائق: Quad 30ث لكل رجل · Calf 30ث لكل
 export let DAYS: DayDef[] = [
   {
     id: 1,
-    title: 'Upper A — الجزء العلوي (أ)',
-    focus: 'Upper A · صدر · ظهر · أكتاف · ذراعان',
+    title: 'الجزء العلوي (أ)',
+    focus: 'الجزء العلوي (أ) · صدر · ظهر · أكتاف · ذراعان',
     subtitle: 'السبت · 45 دقيقة',
     kind: 'straight',
     cardio: { machineId: 'elliptical', mode: 'steady', note: '11 دقيقة: 6 أوبتيكال + 5 دراجة Upright.' },
@@ -96,8 +96,8 @@ export let DAYS: DayDef[] = [
   },
   {
     id: 2,
-    title: 'Lower A — الجزء السفلي (أ)',
-    focus: 'Lower A · أرجل · مؤخرة · جذع',
+    title: 'الجزء السفلي (أ)',
+    focus: 'الجزء السفلي (أ) · أرجل · مؤخرة · جذع',
     subtitle: 'الأحد · 45 دقيقة',
     kind: 'straight',
     cardio: { machineId: 'elliptical', mode: 'steady', note: '11 دقيقة: 6 أوبتيكال + 5 تجديف.' },
@@ -114,8 +114,8 @@ export let DAYS: DayDef[] = [
   },
   {
     id: 3,
-    title: 'Upper B — الجزء العلوي (ب)',
-    focus: 'Upper B · صدر · ظهر · كتف خلفي · ذراعان',
+    title: 'الجزء العلوي (ب)',
+    focus: 'الجزء العلوي (ب) · صدر · ظهر · كتف خلفي · ذراعان',
     subtitle: 'الثلاثاء · 45 دقيقة',
     kind: 'straight',
     cardio: { machineId: 'elliptical', mode: 'steady', note: '11 دقيقة: 7 أوبتيكال + 4 Stair Climber.' },
@@ -132,8 +132,8 @@ export let DAYS: DayDef[] = [
   },
   {
     id: 4,
-    title: 'Lower B — الجزء السفلي (ب)',
-    focus: 'Lower B · أرجل · مؤخرة · جذع',
+    title: 'الجزء السفلي (ب)',
+    focus: 'الجزء السفلي (ب) · أرجل · مؤخرة · جذع',
     subtitle: 'الأربعاء · 45 دقيقة',
     kind: 'straight',
     cardio: { machineId: 'elliptical', mode: 'steady', note: '11 دقيقة: 6 أوبتيكال + 5 دراجة Recumbent (والعادية بديل عند عدم توفرها).' },

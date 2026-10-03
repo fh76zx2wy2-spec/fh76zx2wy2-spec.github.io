@@ -13,7 +13,7 @@ import {
   markBusy,
   pendingDeferred,
   setWeight,
-  skipStage,
+  postponeCurrent,
   substituteStage,
   undoSet,
   completeSet,
@@ -161,6 +161,9 @@ export function ExerciseStage({
               <Icon name="swap" /> الجهاز مشغول — أجّله
             </button>
           )}
+          <button className="btn btn-soft btn-block" onClick={() => upd((l) => postponeCurrent(l, Date.now()))}>
+            <Icon name="swap" /> أؤدي هذا التمرين لاحقًا
+          </button>
           <button className="btn btn-ghost btn-block" onClick={() => setAltOpen(true)}>
             لا أستطيع استخدام هذا الجهاز
           </button>
@@ -193,8 +196,8 @@ export function ExerciseStage({
       <Sheet open={altOpen} onClose={() => setAltOpen(false)} title="بديل ضمن خطتك">
         {alts.length === 0 ? (
           <>
-            <p className="muted">لا يوجد بديل مُعتمد لهذا الجهاز في خطتك. يمكنك تخطّيه هذه المرة والمتابعة.</p>
-            <button className="btn btn-dark btn-block" onClick={() => { setAltOpen(false); upd(skipStage); }}>تخطّي هذا التمرين</button>
+            <p className="muted">لا يوجد بديل مُعتمد لهذا الجهاز في خطتك. يمكنك تركه لوقت لاحق والعودة إليه قبل إنهاء الجلسة.</p>
+            <button className="btn btn-dark btn-block" onClick={() => { setAltOpen(false); upd((l) => postponeCurrent(l, Date.now())); }}>أؤديه لاحقًا</button>
           </>
         ) : (
           <>
@@ -212,7 +215,7 @@ export function ExerciseStage({
                 </div>
               </button>
             ))}
-            <button className="link-btn" onClick={() => { setAltOpen(false); upd(skipStage); }}>أو تخطَّ التمرين</button>
+            <button className="link-btn" onClick={() => { setAltOpen(false); upd((l) => postponeCurrent(l, Date.now())); }}>أو أؤديه لاحقًا</button>
           </>
         )}
       </Sheet>
@@ -356,7 +359,7 @@ export function Interstitial({ live, upd }: { live: LiveSession; upd: Upd }) {
         <div className="stack" style={{ gap: 10, marginTop: 8 }}>
           <button className="btn btn-primary btn-lg btn-block" onClick={() => upd(acceptInterstitial)}>ابدأ به الآن</button>
           {stage.status === 'pending' && canPostponeAgain(live) && (
-            <button className="btn btn-ghost btn-block" onClick={() => upd(skipStage)}>تخطَّه هذه المرة</button>
+            <button className="btn btn-ghost btn-block" onClick={() => upd((l) => postponeCurrent(l, Date.now()))}>أتركه لوقت لاحق</button>
           )}
         </div>
       </section>

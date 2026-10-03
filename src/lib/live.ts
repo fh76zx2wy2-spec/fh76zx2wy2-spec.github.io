@@ -221,6 +221,45 @@ export function currentStage(live: LiveSession): LiveStage | null {
   return live.stages[live.cur] ?? null;
 }
 
+/**
+ * الانتقال الحر بين مراحل الجلسة بدون اعتبار المرحلة الحالية «متخطاة».
+ * إذا كانت المرحلة الحالية موقّتة نحفظ الوقت الذي مضى فيها ثم نوقف ساعتَها.
+ */
+export function jumpToStage(live: LiveSession, index: number, now: number): LiveSession {
+  if (index < 0 || index >= live.stages.length) return live;
+  const target = live.stages[index];
+  if (!target || target.status !== 'pending') return live;
+
+  const cur = live.stages[live.cur];
+  let stages = live.stages;
+  if (cur && cur.kind !== 'exercise' && cur.status === 'pending') {
+    const spent = clockElapsed(live, now);
+    stages = live.stages.map((st, i) => i === live.cur ? { ...st, spent: Math.max(st.spent ?? 0, spent) } : st);
+  }
+
+  const targetAfterSave = stages[index];
+  const acc = targetAfterSave.kind === 'exercise' ? 0 : Math.max(0, (targetAfterSave.spent ?? 0) * 1000);
+  return {
+    ...live,
+    stages,
+    cur: index,
+    rest: null,
+    phase: 'running',
+    inter: null,
+    clock: { startedAt: null, acc },
+  };
+}
+
+/** الانتقال للمرحلة التالية غير المكتملة مع إبقاء الحالية معلّقة للعودة لها لاحقًا. */
+export function postponeCurrent(live: LiveSession, now: number): LiveSession {
+  const candidates = live.stages
+    .map((s, i) => ({ s, i }))
+    .filter(({ s, i }) => i !== live.cur && s.status === 'pending' && (!s.optional || live.optionalAccepted));
+  if (!candidates.length) return live;
+  const after = candidates.find(({ i }) => i > live.cur) ?? candidates[0];
+  return jumpToStage(live, after.i, now);
+}
+
 export function pendingDeferred(live: LiveSession): LiveStage[] {
   return live.stages.filter((s) => s.deferred && s.status === 'pending');
 }

@@ -5,7 +5,7 @@ import { DAILY_FOCUS, pickByDate } from '../data/nutrition';
 import { DURATION_PICKS, RECITERS } from '../data/audio';
 import { useDerived } from '../lib/derived';
 import { useStartActions } from '../lib/actions';
-import { deleteGymVisit, dismiss, endGymVisit, startGymVisit, useDB } from '../lib/store';
+import { deleteGymVisit, dismiss, endGymVisit, reopenGymVisit, startGymVisit, useDB } from '../lib/store';
 import { syncNow, useSyncInfo } from '../lib/sync';
 import { addDaysISO, attendanceDayLabel, diffDaysISO, formatGreg, formatHijri, formatHijriMonth, hijriOf, weekdayName } from '../lib/dates';
 import { attendanceWeekInfo, monthRecapTarget, monthSummary, sessionsWord, weekInfo } from '../lib/week';
@@ -53,6 +53,7 @@ export default function Home() {
   const [shortOpen, setShortOpen] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
   const [exitSummary, setExitSummary] = useState<GymSummaryShare | null>(null);
+  const [lastExitId, setLastExitId] = useState<string | null>(null);
   const { toast } = useToast();
   const buddy = useBuddy();
 
@@ -73,6 +74,11 @@ export default function Home() {
   const todayIcon = dayIcon(suggested, isRestDay);
 
   useEffect(() => { void getPushState().then(setPushState); }, []);
+  useEffect(() => {
+    if (!lastExitId) return;
+    const t = window.setTimeout(() => setLastExitId(null), 60_000);
+    return () => window.clearTimeout(t);
+  }, [lastExitId]);
 
   const arriveAtGym = async () => {
     const wasAttendanceCount = attendanceInfo.count;
@@ -111,6 +117,7 @@ export default function Home() {
         weekCount: attendanceInfo.count,
       };
       setExitSummary(summary);
+      setLastExitId(v.id);
       void (async () => {
         try {
           await syncNow();
@@ -127,6 +134,16 @@ export default function Home() {
     deleteGymVisit(activeVisit.id);
     void syncNow();
     toast('تم التراجع عن تسجيل الوصول');
+  };
+  const undoExit = () => {
+    if (!lastExitId) return;
+    const row = reopenGymVisit(lastExitId);
+    if (!row) return;
+    setLastExitId(null);
+    setExitSummary(null);
+    void syncNow();
+    void buddy.refresh();
+    toast('تم التراجع عن المغادرة — ما زلت في النادي');
   };
   const sendBuddyReaction = async (kind: BuddyReactionKind) => {
     try {
@@ -246,12 +263,12 @@ export default function Home() {
                 خرجت من النادي
               </button>
             )}
-            {(offline || pendingCount > 0) && (
-              <span className="tag coach-sync" title="حالة المزامنة">
-                <Icon name="cloud" size={16} />
-                {offline ? 'بدون اتصال' : 'جارٍ المزامنة'}
-              </span>
-            )}
+            <span className={`tag coach-sync ${offline ? 'warn' : ''}`} title="حالة المزامنة">
+              <Icon name="cloud" size={16} />
+              {offline ? 'بدون اتصال' : pendingCount > 0 || sync.state === 'syncing' ? 'جارٍ الحفظ' : 'تم الحفظ ✓'}
+            </span>
+            <Link to="/more" className="icon-btn on-dark" aria-label="أدوات أخرى"><Icon name="grid" size={19} /></Link>
+            <Link to="/settings" className="icon-btn on-dark" aria-label="الإعدادات"><Icon name="gear" size={19} /></Link>
           </div>
         </div>
         <div className="coach-main">
@@ -304,7 +321,31 @@ export default function Home() {
         )}
       </section>
 
+      {lastExitId && (
+        <div className="undo-exit-banner">
+          <span>سجّلت المغادرة الآن.</span>
+          <button type="button" className="link-btn" onClick={undoExit}>تراجع عن المغادرة</button>
+          <small>متاح لمدة دقيقة</small>
+        </div>
+      )}
 
+      <section className="card home-week-board">
+        <div className="row-between" style={{ marginBottom: 10 }}>
+          <div><div className="eyebrow">الأسبوع الحالي</div><div className="card-title">{formatGreg(curWeekStart, { year: false })} – {formatGreg(addDaysISO(curWeekStart, 6), { year: false })}</div></div>
+          <Link to="/history" className="link-btn">السجل</Link>
+        </div>
+        {buddyMe && buddyMate ? (
+          <div className="buddy-period-grid home-week-grid">
+            {[buddyMe, buddyMate].map((b) => (
+              <div className={`buddy-period-person ${b.in_gym ? 'active' : ''}`} key={b.user_id}>
+                <span>{b.user_id === buddyMe.user_id ? 'أنت' : b.display_name}{b.in_gym ? ' · الآن في النادي 🔥' : ''}</span>
+                <b className="num">{b.weekly_sessions}/4</b>
+                <small>{b.weekly_visits} زيارة · {durationLabel(b.weekly_visit_seconds)}</small>
+              </div>
+            ))}
+          </div>
+        ) : <div className="muted" style={{ fontSize: 13 }}>يظهر هنا تقدمك وتقدم عبدالسلام بعد المزامنة.</div>}
+      </section>
 
       <section className="push-home-card">
         <span className="push-home-icon"><Icon name="bolt" /></span>

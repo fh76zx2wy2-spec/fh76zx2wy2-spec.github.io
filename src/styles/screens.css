@@ -536,3 +536,111 @@ details.card > summary::-webkit-details-marker { display: none; }
 .exercise-guide-btn { border-color: color-mix(in srgb, var(--cold) 38%, var(--line)); background: var(--cold-soft); color: var(--cold-ink); }
 .exercise-guide-frame { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--r-lg); background: #000; box-shadow: var(--shadow-1); }
 .exercise-guide-frame iframe { width: 100%; height: 100%; display: block; border: 0; }
+
+/* ===== 2026-10-03: لوحة النادي والسجل المرن ===== */
+.undo-exit-banner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-sm);
+}
+.undo-exit-banner span { font-weight: 700; }
+.undo-exit-banner small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+.coach-sync.warn { color: var(--hot-ink); }
+
+.today-workout-hero {
+  border-color: color-mix(in srgb, var(--hot) 42%, var(--line));
+  background: linear-gradient(150deg, color-mix(in srgb, var(--hot-soft) 66%, var(--surface)) 0%, var(--surface) 72%);
+}
+.today-workout-note {
+  margin: 12px 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.free-stage-list { display: grid; gap: 8px; margin-top: 12px; }
+.free-stage-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: start;
+}
+.free-stage-row.cur { border-color: var(--hot); background: var(--hot-soft); }
+.free-stage-row.done { opacity: .65; }
+.free-stage-row:disabled { cursor: default; }
+.free-stage-row small { display: block; color: var(--muted); margin-top: 2px; font-size: 12.5px; }
+.free-stage-state {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--hot-ink);
+  font-size: 11px;
+  font-weight: 800;
+}
+.free-stage-row.done .free-stage-state { background: var(--cold-soft); color: var(--cold-ink); }
+.live-pick-stage { white-space: nowrap; }
+
+.history-compare-card { overflow: hidden; }
+.buddy-period-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.buddy-period-person {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-2);
+  padding: 14px;
+  min-width: 0;
+}
+.buddy-period-person > span { color: var(--muted); font-size: 12.5px; }
+.buddy-period-person > b { display: block; font-size: 30px; line-height: 1.1; margin: 5px 0 2px; }
+.buddy-period-person > small { color: var(--ink-2); font-size: 12px; }
+
+.week-history-list { display: grid; gap: 8px; }
+.week-history-row {
+  display: grid;
+  grid-template-columns: minmax(118px, 1.35fr) repeat(2, minmax(72px, .8fr));
+  gap: 8px;
+  align-items: stretch;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.week-history-row.current { border-color: color-mix(in srgb, var(--hot) 46%, var(--line)); background: color-mix(in srgb, var(--hot-soft) 52%, var(--surface)); }
+.week-history-date, .week-history-score { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; }
+.week-history-date b { font-size: 12.5px; }
+.week-history-date small, .week-history-score small { color: var(--muted); font-size: 10.5px; }
+.week-history-score { padding: 6px 8px; border-radius: 10px; background: var(--surface-2); text-align: center; align-items: center; }
+.week-history-score span { color: var(--muted); font-size: 10.5px; }
+.week-history-score b { font-size: 20px; }
+.history-section-head { padding: 16px 18px 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+
+.attendance-stats-grid .stat b:not(.num) { font-size: 18px; }
+.stats-hero { background: linear-gradient(145deg, color-mix(in srgb, var(--cold-soft) 54%, var(--surface)) 0%, var(--surface) 70%); }
+
+@media (max-width: 390px) {
+  .week-history-row { grid-template-columns: 1fr 74px 74px; }
+  .live-pick-stage { padding-inline: 8px; font-size: 11px; }
+}

@@ -6,10 +6,12 @@ import { useDerived } from '../lib/derived';
 import { deleteMeasurement, saveMeasurement } from '../lib/store';
 import { diffDaysISO, formatGreg, formatHijri, weekStartOf } from '../lib/dates';
 import { programWeekOf, usualTime, weightSeries, weightStalled } from '../lib/week';
-import { kgLabel } from '../lib/format';
+import { durationLabel, kgLabel } from '../lib/format';
 import type { Measurement } from '../lib/types';
 import { PageHeader, useToast } from '../components/ui';
 import { Icon } from '../components/Icon';
+import { useBuddy } from '../lib/buddy';
+import { buildAchievements } from '../lib/achievements';
 
 function WeightChart({ series, startWeek, weekStartDay }: { series: Measurement[]; startWeek: string; weekStartDay: number }) {
   const W = 340;
@@ -54,8 +56,11 @@ export default function Progress() {
   const d = useDerived();
   const nav = useNavigate();
   const { toast } = useToast();
+  const buddy = useBuddy();
   const { today, weekStartDay, position, stats, sessions } = d;
   const measurements = d.db?.measurements ?? [];
+  const visits = d.db?.visits ?? [];
+  const achievements = buildAchievements(d.sessions, visits, buddy.me?.streak_4of4 ?? d.stats.streak.current, d.stats.weeksComplete);
   const series = useMemo(() => weightSeries(measurements), [measurements]);
   const thisWeek = weekStartOf(today, weekStartDay);
   const current = measurements.find((m) => m.week_start === thisWeek);
@@ -69,6 +74,9 @@ export default function Progress() {
   const last = series[series.length - 1]?.weight_kg ?? null;
   const change = first != null && last != null && series.length > 1 ? Math.round((last - first) * 10) / 10 : null;
   const usual = usualTime(sessions);
+  const endedVisits = visits.filter((v) => !!v.left_at);
+  const allVisitSeconds = endedVisits.reduce((sum, v) => sum + Math.max(0, v.duration_seconds), 0);
+  const avgVisitSeconds = endedVisits.length ? Math.round(allVisitSeconds / endedVisits.length) : 0;
 
   function parseNum(s: string): number | null {
     const n = Number(s.replace(',', '.').trim());
@@ -97,7 +105,31 @@ export default function Progress() {
   const S = stats;
   return (
     <div className="page stack">
-      <PageHeader title="تقدّمي" onBack={() => nav('/more')} />
+      <PageHeader title="الإحصاءات" onBack={() => nav('/')} sub="الحضور والالتزام والتقدم" />
+
+      <section className="card stats-hero">
+        <div className="eyebrow">ملخصك</div>
+        <div className="stats-grid attendance-stats-grid">
+          <div className="stat"><b className="num">{visits.length}</b><span>إجمالي الزيارات</span></div>
+          <div className="stat"><b>{durationLabel(allVisitSeconds)}</b><span>إجمالي وقت النادي</span></div>
+          <div className="stat"><b>{avgVisitSeconds ? durationLabel(avgVisitSeconds) : '—'}</b><span>متوسط الزيارة</span></div>
+          <div className="stat"><b className="num">{buddy.me?.streak_4of4 ?? 0}</b><span>سلسلة 4/4</span></div>
+        </div>
+      </section>
+
+      {buddy.me && buddy.buddy && (
+        <section className="card">
+          <div className="row-between" style={{ marginBottom: 10 }}><div><div className="eyebrow">هذا الأسبوع</div><div className="card-title">أنا و{buddy.buddy.display_name}</div></div><span className="tag">ملخص أسبوعي</span></div>
+          <div className="buddy-period-grid">
+            {[buddy.me, buddy.buddy].map((b) => <div className="buddy-period-person" key={b.user_id}><span>{b.user_id === buddy.me?.user_id ? 'أنت' : b.display_name}</span><b className="num">{b.weekly_visits}</b><small>زيارة · {durationLabel(b.weekly_visit_seconds)} · {b.weekly_sessions}/4</small></div>)}
+          </div>
+        </section>
+      )}
+
+      <section className="card achievement-card">
+        <div className="row-between" style={{ marginBottom: 10 }}><div><div className="eyebrow">إنجازاتك</div><div className="card-title">شارات 45/4 🏆</div></div><span className="tag tag-cold">{achievements.filter((a) => a.unlocked).length}/{achievements.length}</span></div>
+        <div className="achievement-grid">{achievements.map((a) => <div key={a.id} className={`achievement ${a.unlocked ? 'on' : 'off'}`}><span className="achievement-icon"><Icon name={a.icon} /></span><div><b>{a.title}</b><small>{a.detail}</small></div>{a.unlocked && <span className="achievement-check"><Icon name="check" size={13} /></span>}</div>)}</div>
+      </section>
 
       {/* الوزن */}
       <section className="card stack">

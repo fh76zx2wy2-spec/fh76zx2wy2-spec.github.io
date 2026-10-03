@@ -24,8 +24,8 @@ export default function Workout() {
     <div className="page stack">
       <div className="topbar">
         <div>
-          <h1>التمرين</h1>
-          <div className="eyebrow">هذا الأسبوع {d.info.count}/{WEEKLY_GOAL} · {d.position.phase.name}</div>
+          <h1>تمرين اليوم</h1>
+          <div className="eyebrow">نفّذ أجزاء الجلسة بأي ترتيب يناسبك · هذا الأسبوع {d.info.count}/{WEEKLY_GOAL}</div>
         </div>
       </div>
 
@@ -41,8 +41,24 @@ export default function Workout() {
         </button>
       )}
 
+      {d.suggested && (() => {
+        const todayDay = DAYS.find((x) => x.id === d.suggested)!;
+        return (
+          <section className="card today-workout-hero">
+            <div className="eyebrow">المقترح اليوم</div>
+            <div className="row-between" style={{ alignItems: 'flex-start', gap: 12 }}>
+              <div className="grow"><div className="card-title">{todayDay.title}</div><div className="card-sub">{todayDay.subtitle} · {todayDay.ironSummary}</div></div>
+              <span className="tag tag-hot">45 دقيقة</span>
+            </div>
+            <div className="today-workout-note">الإحماء والحديد والكارديو والإطالة مطلوبة اليوم، لكن <b>الترتيب متروك لك</b>. ويمكنك الرجوع لأي جزء لم تكمله.</div>
+            <button className="btn btn-primary btn-lg btn-block" onClick={() => act.startDay(todayDay.id)}><Icon name="play" /> ابدأ تمرين اليوم</button>
+          </section>
+        );
+      })()}
+
+      <div className="row-between" style={{ marginTop: 4 }}><div className="card-title">أيام البرنامج</div><span className="muted" style={{ fontSize: 13 }}>اختر أي يوم عند الحاجة</span></div>
       <div className="stack" style={{ gap: 12 }}>
-        {DAYS.map((day) => {
+        {[...DAYS].sort((a, b) => a.id === d.suggested ? -1 : b.id === d.suggested ? 1 : a.id - b.id).map((day) => {
           const done = d.info.doneDays.has(day.id);
           const sug = d.suggested === day.id;
           return (

@@ -11,13 +11,15 @@ import {
   completeTimedStage,
   elapsedSession,
   hasMeaningfulProgress,
+  jumpToStage,
+  machineName,
+  postponeCurrent,
   nextAfterStage,
   pauseClock,
   pauseLive,
   progressFraction,
   resumeLive,
   skipRest,
-  skipStage,
   startClock,
   undoLastStep,
 } from '../lib/live';
@@ -69,6 +71,7 @@ function LiveInner({ live, onSaved, onLeave }: { live: LiveSession; onSaved: (r:
   const now = useNow(250);
   const [earlyOpen, setEarlyOpen] = useState(false);
   const [discardOpen, setDiscardOpen] = useState(false);
+  const [stagesOpen, setStagesOpen] = useState(false);
 
   const upd: Upd = (fn) => {
     const cur = getDB()?.live;
@@ -263,7 +266,7 @@ function LiveInner({ live, onSaved, onLeave }: { live: LiveSession; onSaved: (r:
           }
         />
         {!isExtra && stage.status === 'pending' && (
-          <div className="center"><button className="link-btn" onClick={() => upd(skipStage)}>تخطّي هذه المرحلة</button></div>
+          <div className="center"><button className="link-btn" onClick={() => upd((l) => postponeCurrent(l, Date.now()))}>أؤدي هذه المرحلة لاحقًا</button></div>
         )}
       </>
     );
@@ -342,6 +345,15 @@ function LiveInner({ live, onSaved, onLeave }: { live: LiveSession; onSaved: (r:
 
   const meaningful = hasMeaningfulProgress(live, now);
   const pct = Math.round(progressFraction(live) * 100);
+  const stageLabel = (s: LiveSession['stages'][number]) => {
+    if (s.key === 'warmup') return 'الإحماء';
+    if (s.key === 'cardio') return 'الكارديو';
+    if (s.kind === 'stretch') return 'الإطالة';
+    if (s.kind === 'exercise') {
+      return machineName(s.machineId).ar;
+    }
+    return 'المرحلة';
+  };
   const activeVisit = db?.visits.find((v) => !v.left_at) ?? null;
   const undoArrival = () => {
     if (!activeVisit) return;
@@ -360,6 +372,11 @@ function LiveInner({ live, onSaved, onLeave }: { live: LiveSession; onSaved: (r:
           <button className="icon-btn on-dark" onClick={() => nav('/')} aria-label="العودة للتطبيق دون إنهاء الجلسة">
             <Icon name="chevR" />
           </button>
+          {!isExtra && (
+            <button className="btn btn-sm btn-onhero-ghost live-pick-stage" onClick={() => setStagesOpen(true)}>
+              <Icon name="list" size={17} /> اختر الجزء
+            </button>
+          )}
           <div className="live-timer">
             <Clock seconds={elapsed} className="live-clock" />
             <span>{paused ? 'متوقفة مؤقتًا' : 'مدة الجلسة'}</span>
@@ -423,6 +440,30 @@ function LiveInner({ live, onSaved, onLeave }: { live: LiveSession; onSaved: (r:
           </div>
         </div>
       )}
+
+      <Sheet open={stagesOpen} onClose={() => setStagesOpen(false)} title="اختر ما ستؤديه الآن">
+        <p className="muted" style={{ fontSize: 13.5 }}>لا يوجد ترتيب إجباري. أي جزء لم تكمله يبقى متاحًا حتى تنهي الجلسة.</p>
+        <div className="free-stage-list">
+          {live.stages.map((s, i) => {
+            const isCur = i === live.cur && s.status === 'pending';
+            const doneStage = s.status !== 'pending';
+            const progress = s.kind === 'exercise' ? `${s.setsDone}/${s.sets}` : (s.spent ? `${Math.floor(s.spent / 60)} د` : '');
+            return (
+              <button
+                key={s.key}
+                type="button"
+                className={`free-stage-row ${isCur ? 'cur' : ''} ${doneStage ? 'done' : ''}`}
+                disabled={doneStage}
+                onClick={() => { setStagesOpen(false); if (!isCur) upd((l) => jumpToStage(l, i, Date.now())); }}
+              >
+                <span className="free-stage-state">{doneStage ? <Icon name="check" size={17} /> : isCur ? 'الآن' : '○'}</span>
+                <span className="grow"><b>{stageLabel(s)}</b><small>{s.kind === 'exercise' ? `${s.sets} سيت · ${s.reps}` : s.key === 'warmup' ? '7 دقائق' : s.key === 'cardio' ? '11 دقيقة' : s.kind === 'stretch' ? '5 دقائق' : ''}</small></span>
+                {progress && <span className="tag">{progress}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </Sheet>
 
       {/* قائمة جاهز؟ */}
       <Sheet

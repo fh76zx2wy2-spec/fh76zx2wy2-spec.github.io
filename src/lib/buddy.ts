@@ -11,6 +11,11 @@ export interface BuddyStat {
   weekly_sessions: number;
   weekly_visits: number;
   weekly_visit_seconds: number;
+  monthly_visits: number;
+  monthly_visit_seconds: number;
+  all_visits: number;
+  all_visit_seconds: number;
+  first_arrived_at: string | null;
   last_arrived_at: string | null;
   last_left_at: string | null;
   last_visit_seconds: number;
@@ -33,6 +38,27 @@ export const BUDDY_REACTION_LABEL: Record<BuddyReactionKind, string> = {
   yourturn: '👉 اليوم عليك',
   beast4: '🔥 4/4 يا وحش',
 };
+
+
+export interface BuddyAttendanceDay {
+  user_id: string;
+  display_name: string;
+  email: string;
+  visit_date: string;
+  visit_count: number;
+  visit_seconds: number;
+}
+
+export async function fetchBuddyAttendance(from: string, to: string): Promise<BuddyAttendanceDay[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('get_buddy_attendance', { p_from: from, p_to: to });
+  if (error) throw error;
+  return ((data ?? []) as BuddyAttendanceDay[]).map((x) => ({
+    ...x,
+    visit_count: Number(x.visit_count ?? 0),
+    visit_seconds: Number(x.visit_seconds ?? 0),
+  }));
+}
 
 export function useBuddy() {
   const { user } = useAuth();
@@ -59,6 +85,11 @@ export function useBuddy() {
         weekly_sessions: Number(x.weekly_sessions ?? 0),
         weekly_visits: Number(x.weekly_visits ?? 0),
         weekly_visit_seconds: Number(x.weekly_visit_seconds ?? 0),
+        monthly_visits: Number(x.monthly_visits ?? 0),
+        monthly_visit_seconds: Number(x.monthly_visit_seconds ?? 0),
+        all_visits: Number(x.all_visits ?? 0),
+        all_visit_seconds: Number(x.all_visit_seconds ?? 0),
+        first_arrived_at: x.first_arrived_at ?? null,
         last_visit_seconds: Number(x.last_visit_seconds ?? 0),
         streak_4of4: Number(x.streak_4of4 ?? 0),
         in_gym: Boolean(x.in_gym),
