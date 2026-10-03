@@ -14,6 +14,8 @@ import { syncNow } from '../lib/sync';
 type Filter = 'all' | 'base' | 'extra';
 type Period = 'week' | 'month' | 'all';
 
+const TRACKING_START = '2026-09-24';
+
 export function sessionLabel(s: Session): string {
   if (s.session_type === 'extra') return EXTRA_BY_ID[s.extra_kind ?? '']?.title ?? 'جلسة إضافية';
   return s.workout_day ? `اليوم ${s.workout_day} — ${DAY_BY_ID[s.workout_day].title}` : 'جلسة';
@@ -76,7 +78,7 @@ export default function History() {
   const [attendanceError, setAttendanceError] = useState(false);
   const [editVisit, setEditVisit] = useState<GymVisit | null>(null);
 
-  const historyFrom = addDaysISO(weekStartOf(d.today, 0), -7 * 11);
+  const historyFrom = TRACKING_START;
   useEffect(() => {
     let alive = true;
     fetchBuddyAttendance(historyFrom, d.today)
@@ -104,8 +106,21 @@ export default function History() {
     return g;
   }, [list]);
 
-  const weeks = useMemo(() => Array.from({ length: 12 }, (_, i) => addDaysISO(weekStartOf(d.today, 0), -i * 7)), [d.today]);
-  const weekRows = (start: string, email: string) => attendance.filter((r) => r.email.toLowerCase() === email.toLowerCase() && r.visit_date >= start && r.visit_date <= addDaysISO(start, 6));
+  const weeks = useMemo(() => {
+    const current = weekStartOf(d.today, 0);
+    const out: string[] = [];
+    for (let i = 0; i < 260; i += 1) {
+      const w = addDaysISO(current, -i * 7);
+      if (addDaysISO(w, 6) < TRACKING_START) break;
+      out.push(w);
+    }
+    return out;
+  }, [d.today]);
+  const effectiveWeekStart = (start: string) => start < TRACKING_START ? TRACKING_START : start;
+  const weekRows = (start: string, email: string) => {
+    const from = effectiveWeekStart(start);
+    return attendance.filter((r) => r.email.toLowerCase() === email.toLowerCase() && r.visit_date >= from && r.visit_date <= addDaysISO(start, 6));
+  };
   const ownVisits = [...(d.db?.visits ?? [])].sort((a, b) => b.arrived_at.localeCompare(a.arrived_at));
 
   const removeVisit = (v: GymVisit) => {
@@ -138,7 +153,7 @@ export default function History() {
       </section>
 
       <section className="card">
-        <div className="row-between" style={{ marginBottom: 10 }}><div><div className="eyebrow">آخر 12 أسبوعًا</div><div className="card-title">سجل الأسابيع</div></div><span className="tag">الأحد ← السبت</span></div>
+        <div className="row-between" style={{ marginBottom: 10 }}><div><div className="eyebrow">منذ بداية المتابعة · 24 سبتمبر 2026</div><div className="card-title">سجل الأسابيع</div></div><span className="tag">الأحد ← السبت</span></div>
         {attendanceError ? <div className="note-box hot">السجل المشترك يحتاج تشغيل ملف SQL الجديد مرة واحدة.</div> : (
           <div className="week-history-list">
             {weeks.map((w, idx) => {
@@ -150,9 +165,11 @@ export default function History() {
               const mateVisits = mateRows.reduce((n, r) => n + r.visit_count, 0);
               const meDays = meRows.length;
               const mateDays = mateRows.length;
+              const shownStart = effectiveWeekStart(w);
+              const isFirstPartialWeek = shownStart !== w;
               return (
                 <div className={`week-history-row ${idx === 0 ? 'current' : ''}`} key={w}>
-                  <div className="week-history-date"><b>{idx === 0 ? 'هذا الأسبوع' : `${formatGreg(w, { year: false })} – ${formatGreg(addDaysISO(w, 6), { year: false })}`}</b><small>{meDays >= WEEKLY_GOAL || mateDays >= WEEKLY_GOAL ? '🏆' : ''}</small></div>
+                  <div className="week-history-date"><b>{idx === 0 ? 'هذا الأسبوع' : `${formatGreg(shownStart, { year: false })} – ${formatGreg(addDaysISO(w, 6), { year: false })}`}</b><small>{isFirstPartialWeek ? 'بداية المتابعة' : (meDays >= WEEKLY_GOAL || mateDays >= WEEKLY_GOAL ? '🏆' : '')}</small></div>
                   <div className="week-history-score"><span>أنت</span><b className="num">{meVisits}</b><small>{Math.min(4, meDays)}/4 أيام</small></div>
                   <div className="week-history-score"><span>{buddy.buddy?.display_name ?? 'عبدالسلام'}</span><b className="num">{mateVisits}</b><small>{Math.min(4, mateDays)}/4 أيام</small></div>
                 </div>

@@ -48,6 +48,7 @@ declare
   lv_arrived timestamptz;
   lv_left timestamptz;
   lv_seconds bigint;
+  tracking_start date := date '2026-09-24';
 begin
   if caller_email not in ('z062496@gmail.com', 'amk157662@gmail.com') then
     raise exception 'buddy_not_allowed';
@@ -84,7 +85,7 @@ begin
       into monthly_visits, monthly_visit_seconds
       from public.gym_visits v
      where v.user_id = uid
-       and v.date >= month_start
+       and v.date >= greatest(month_start, tracking_start)
        and v.date < (month_start + interval '1 month')::date;
 
     select count(*)::integer,
@@ -92,7 +93,8 @@ begin
            min(v.arrived_at)
       into all_visits, all_visit_seconds, first_arrived_at
       from public.gym_visits v
-     where v.user_id = uid;
+     where v.user_id = uid
+       and v.date >= tracking_start;
 
     lv_arrived := null; lv_left := null; lv_seconds := 0;
     select v.arrived_at, v.left_at,
@@ -100,6 +102,7 @@ begin
       into lv_arrived, lv_left, lv_seconds
       from public.gym_visits v
      where v.user_id = uid
+       and v.date >= tracking_start
      order by v.arrived_at desc
      limit 1;
 
@@ -113,11 +116,12 @@ begin
     w := wk_start;
     if weekly_sessions < 4 then w := w - 7; end if;
     for i in 1..260 loop
+      exit when (w + 6) < tracking_start;
       select least(4, count(distinct v.date))::integer
         into cnt
         from public.gym_visits v
        where v.user_id = uid
-         and v.date between w and w + 6;
+         and v.date between greatest(w, tracking_start) and w + 6;
       exit when coalesce(cnt, 0) < 4;
       streak := streak + 1;
       w := w - 7;
@@ -159,6 +163,7 @@ declare
   caller_email text := lower(coalesce(auth.jwt() ->> 'email', ''));
   safe_from date;
   safe_to date;
+  tracking_start date := date '2026-09-24';
 begin
   if caller_email not in ('z062496@gmail.com', 'amk157662@gmail.com') then
     raise exception 'buddy_not_allowed';
@@ -168,7 +173,7 @@ begin
   end if;
 
   safe_to := least(coalesce(p_to, (now() at time zone 'Asia/Riyadh')::date), (now() at time zone 'Asia/Riyadh')::date + 1);
-  safe_from := greatest(coalesce(p_from, safe_to - 90), safe_to - 730);
+  safe_from := greatest(coalesce(p_from, safe_to - 90), safe_to - 730, tracking_start);
 
   return query
   select u.id,
