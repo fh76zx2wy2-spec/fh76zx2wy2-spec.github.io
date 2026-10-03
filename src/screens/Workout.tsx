@@ -110,10 +110,10 @@ export default function Workout() {
             <div className="plan-list">
               {plan.weightsFirst && plan.warmupMinutes > 0 && (
                 <div className="plan-row">
-                  <Illustration id={MACHINES[plan.cardio.machineId].illustration} className="sm plan-ill" />
+                  <Illustration id={MACHINES['warmup-track'].illustration} className="sm plan-ill" />
                   <div className="grow">
-                    <div className="t">تسخين</div>
-                    <div className="s">{plan.warmupMinutes} دقائق · أوبتيكال أو سيكل هادئ</div>
+                    <div className="t">الإحماء على مضمار النادي</div>
+                    <div className="s">{plan.day.warmupHint ?? `${plan.warmupMinutes} دقائق · مشي سريع + هرولة خفيفة + حركة ديناميكية`}</div>
                   </div>
                 </div>
               )}
@@ -121,8 +121,8 @@ export default function Workout() {
                 <div className="plan-row">
                   <Illustration id={MACHINES[plan.cardio.machineId].illustration} className="sm plan-ill" />
                   <div className="grow">
-                    <div className="t">{MACHINES[plan.cardio.machineId].ar}</div>
-                    <div className="s">كارديو {plan.cardio.minutes} دقيقة · {plan.cardio.mode === 'intervals' ? 'فترات' : 'إيقاع ثابت'}</div>
+                    <div className="t">الكارديو</div>
+                    <div className="s">{plan.cardio.note}</div>
                   </div>
                 </div>
               )}
@@ -135,18 +135,23 @@ export default function Workout() {
                   </div>
                 </div>
               ))}
+              {plan.day.ironHint && (
+                <div className="note-box cold" style={{ margin: '4px 0 8px' }}>
+                  <b>ملاحظة الحديد:</b> {plan.day.ironHint}
+                </div>
+              )}
               {plan.weightsFirst && (
                 <div className="plan-row">
                   <Illustration id={MACHINES[plan.cardio.machineId].illustration} className="sm plan-ill" />
                   <div className="grow">
-                    <div className="t">{MACHINES[plan.cardio.machineId].ar}</div>
-                    <div className="s">كارديو {plan.cardio.minutes} دقيقة · {plan.cardio.mode === 'intervals' ? 'فترات' : 'إيقاع ثابت'}</div>
+                    <div className="t">الكارديو</div>
+                    <div className="s">{plan.cardio.note}</div>
                   </div>
                 </div>
               )}
               <div className="plan-row">
                 <Illustration id="stretch" className="sm plan-ill" />
-                <div className="grow"><div className="t">إطالة</div><div className="s">{plan.stretchMinutes} دقائق</div></div>
+                <div className="grow"><div className="t">إطالة</div><div className="s">{plan.day.stretchHint}</div></div>
               </div>
             </div>
             {plan.circuit && (

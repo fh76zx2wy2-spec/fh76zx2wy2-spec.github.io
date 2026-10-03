@@ -14,6 +14,7 @@ export interface Machine {
   group: MachineGroup;
   /** فيديو شرح قصير من مدرب رجل — يُفتح داخل 45/4 */
   guideYoutubeId?: string;
+  guideYoutubeStartSeconds?: number;
   guideTitle?: string;
   /** العضلات المستهدفة */
   muscles: string;
@@ -29,6 +30,10 @@ export interface Machine {
 export type MachineId =
   | 'elliptical'
   | 'bike'
+  | 'rower'
+  | 'stair-climber'
+  | 'recumbent-bike'
+  | 'warmup-track'
   | 'pool'
   | 'chest-press'
   | 'lat-pulldown'
@@ -44,7 +49,15 @@ export type MachineId =
   | 'triceps-pushdown'
   | 'plank'
   | 'glute-bridge'
-  | 'crunch';
+  | 'crunch'
+  | 'incline-dumbbell-press'
+  | 'walking-lunge'
+  | 'face-pull'
+  | 'hammer-curl'
+  | 'hip-thrust'
+  | 'bulgarian-split-squat'
+  | 'seated-calf-raise'
+  | 'side-plank';
 
 export const MACHINES: Record<MachineId, Machine> = {
   elliptical: {
@@ -346,6 +359,87 @@ export const MACHINES: Record<MachineId, Machine> = {
     illustration: 'crunch',
     keywords: ['بطن', 'abs', 'core', 'crunch', 'كرنش'],
   },
+  rower: {
+    id: 'rower', ar: 'جهاز التجديف', en: 'Rowing Machine', group: 'cardio',
+    muscles: 'جسم كامل: الأرجل والجذع والظهر والذراعان',
+    steps: ['ثبّت القدمين وابدأ والركبتان مثنيتان والذراعان ممدودتان.', 'ادفع أولًا بالرجلين مع ظهر متزن، ثم افتح الجذع قليلًا واسحب المقبض.', 'في الرجوع: مد الذراعين أولًا، ثم الجذع، ثم اثن الركبتين.'],
+    warn: 'لا تبدأ السحبة بالذراعين ولا تدوّر أسفل ظهرك.', illustration: 'rower', keywords: ['تجديف','rower','rowing','كارديو'],
+  },
+  'stair-climber': {
+    id: 'stair-climber', ar: 'جهاز الدرج', en: 'Stair Climber', group: 'cardio',
+    muscles: 'الفخذان والمؤخرة والساقان',
+    steps: ['اصعد بثبات وأبقِ صدرك مرفوعًا.', 'استخدم المقابض للتوازن فقط، لا لتحميل وزن جسمك.', 'اختر سرعة تسمح بخطوات منتظمة ومريحة.'],
+    warn: 'خفّف السرعة إذا بدأت تتكئ على المقابض.', illustration: 'stair-climber', keywords: ['درج','stairs','stair','climber','كارديو'],
+  },
+  'recumbent-bike': {
+    id: 'recumbent-bike', ar: 'دراجة الجلوس ذات الظهر', en: 'Recumbent Bike', group: 'cardio',
+    muscles: 'الفخذان والمؤخرة والساقان مع دعم للظهر',
+    steps: ['اضبط المقعد بحيث تبقى الركبة مثنية قليلًا عند أبعد نقطة للدواسة.', 'ألصق ظهرك بالمسند وأبقِ القدمين مثبتتين.', 'ابدأ بمقاومة خفيفة ثم حافظ على دوران متوسط ومريح.'],
+    warn: 'إذا لم تتوفر في النادي استخدم الدراجة العادية بنفس المدة.', illustration: 'recumbent-bike', keywords: ['دراجة','جلوس','ظهر','recumbent','bike'],
+  },
+  'warmup-track': {
+    id: 'warmup-track', ar: 'مضمار النادي', en: 'Indoor Track Warm-up', group: 'cardio',
+    muscles: 'إحماء عام للجسم قبل الحديد',
+    steps: ['4 دقائق مشي سريع على مضمار النادي.', 'دقيقتان: 30 ثانية هرولة خفيفة + 30 ثانية مشي، وتكرر مرتين.', 'الدقيقة الأخيرة حركة ديناميكية تناسب يوم العلوي أو السفلي.'],
+    warn: 'لا يوجد سير كهربائي ضمن هذا البرنامج.', illustration: 'warmup-track', keywords: ['مضمار','مشي','هرولة','إحماء','warmup','track'],
+  },
+  'incline-dumbbell-press': {
+    id: 'incline-dumbbell-press', ar: 'ضغط دمبل مائل', en: 'Incline Dumbbell Press', group: 'strength',
+    guideYoutubeId: '8iPEnn-ltC8', guideTitle: 'شرح ضغط الدمبل المائل — مدرب رجل',
+    muscles: 'أعلى الصدر، مقدمة الكتف، الترايسبس',
+    steps: ['اضبط المقعد على ميل مريح واجعل الدمبلين بجانب أعلى الصدر.', 'ادفع للأعلى بتحكم دون اصطدام الدمبلين.', 'انزل ببطء إلى مستوى مريح ولا تقوّس أسفل ظهرك.'],
+    warn: 'اختر وزنًا يسمح لك بإبقاء الظهر ثابتًا على المقعد.', illustration: 'incline-dumbbell-press', keywords: ['صدر','مائل','دمبل','incline','dumbbell','press'],
+  },
+  'walking-lunge': {
+    id: 'walking-lunge', ar: 'لانجز مشي', en: 'Walking Lunge', group: 'strength',
+    guideYoutubeId: 'COKYKgQ8KR0', guideTitle: 'شرح اللانجز — المدرب Max Tapper',
+    muscles: 'الفخذ الأمامي والخلفي والمؤخرة والتوازن',
+    steps: ['ابدأ بدون وزن في أول أسبوعين وخذ خطوة للأمام بمسافة مريحة.', 'انزل بثني الركبتين مع صدر مرفوع وتوازن ثابت.', 'ادفع بكامل القدم الأمامية وتقدم بالرجل الأخرى.'],
+    warn: 'ابدأ بوزن الجسم فقط حتى تثبت الحركة والتوازن.', illustration: 'walking-lunge', keywords: ['لانجز','اندفاع','مشي','lunge','walking'],
+  },
+  'face-pull': {
+    id: 'face-pull', ar: 'فيس بول بالحبل', en: 'Face Pull', group: 'strength',
+    guideYoutubeId: 'rep-qVOkqgk', guideTitle: 'شرح Face Pull — Scott Herman',
+    muscles: 'الكتف الخلفي وأعلى الظهر',
+    steps: ['ضع الحبل تقريبًا عند مستوى الوجه.', 'اسحب نحو الوجه مع خروج المرفقين لأعلى وللخارج.', 'فرّق طرفي الحبل وارجع بتحكم.'],
+    warn: 'استخدم وزنًا خفيفًا يمكنك التحكم به دون تأرجح.', illustration: 'face-pull', keywords: ['فيس','بول','حبل','كتف','face','pull'],
+  },
+  'hammer-curl': {
+    id: 'hammer-curl', ar: 'هامر كيرل', en: 'Hammer Curl', group: 'strength',
+    guideYoutubeId: '8XLxfXROrTo', guideTitle: 'شرح Hammer Curl — Scott Herman',
+    muscles: 'البايسبس والعضلة العضدية والساعد',
+    steps: ['أمسك الدمبلين والكفان مواجهتان لبعضهما.', 'ثبّت المرفقين بجانب الجسم وارفع الدمبلين بثني المرفق.', 'انزل ببطء دون تأرجح بالجذع.'],
+    warn: 'إذا احتجت للتمايل فالوزن أثقل من اللازم.', illustration: 'hammer-curl', keywords: ['هامر','كيرل','بايسبس','hammer','curl'],
+  },
+  'hip-thrust': {
+    id: 'hip-thrust', ar: 'هيب ثرست', en: 'Hip Thrust', group: 'strength',
+    guideYoutubeId: 'SEdqd1n0cvg', guideTitle: 'شرح Hip Thrust — Scott Herman',
+    muscles: 'المؤخرة والفخذ الخلفي',
+    steps: ['ثبت أعلى ظهرك على المقعد أو استخدم الجهاز إن كان موجودًا.', 'ثبت القدمين وارفع الحوض بشد عضلات المؤخرة.', 'توقف في الأعلى دون المبالغة في تقويس أسفل الظهر ثم انزل بتحكم.'],
+    warn: 'ابدأ بوزن الجسم أو وزن خفيف حتى تتقن الوضعية.', illustration: 'hip-thrust', keywords: ['مؤخرة','حوض','هيب','ثرست','hip','thrust'],
+  },
+  'bulgarian-split-squat': {
+    id: 'bulgarian-split-squat', ar: 'بلغاريان سبليت سكوات', en: 'Bulgarian Split Squat', group: 'strength',
+    guideYoutubeId: '2C-uNgKwPLE', guideTitle: 'شرح Bulgarian Split Squat — Scott Herman',
+    muscles: 'الفخذ الأمامي والمؤخرة والتوازن',
+    steps: ['ضع القدم الخلفية على بنش منخفض والأمامية أمامك بمسافة مريحة.', 'انزل بالجسم بتحكم مع بقاء القدم الأمامية ثابتة.', 'ادفع بالرجل الأمامية للعودة للأعلى.'],
+    warn: 'ابدأ بوزن الجسم فقط، واستخدم دعامة للتوازن عند الحاجة.', illustration: 'bulgarian-split-squat', keywords: ['بلغاري','سكوات','split','squat','bulgarian'],
+  },
+  'seated-calf-raise': {
+    id: 'seated-calf-raise', ar: 'رفع السمانة جالسًا', en: 'Seated Calf Raise', group: 'strength',
+    guideYoutubeId: 'BKa5yq0Q0-c', guideYoutubeStartSeconds: 162, guideTitle: 'شرح Seated Calf Raise — Scott Herman (يبدأ عند 2:42)',
+    muscles: 'السمانة، خصوصًا عضلة soleus',
+    steps: ['اجلس وثبت القدمين بحيث تكون مقدمة القدم على المنصة والكعبان حران.', 'ارفع الكعبين للأعلى وتوقف لحظة.', 'انزل ببطء حتى تشعر بتمدد خفيف.'],
+    warn: 'الحركة من الكاحل فقط؛ لا تنط بالوزن.', illustration: 'seated-calf-raise', keywords: ['سمانة','جالس','calf','seated','raise'],
+  },
+  'side-plank': {
+    id: 'side-plank', ar: 'بلانك جانبي', en: 'Side Plank', group: 'core',
+    guideYoutubeId: 'NXr4Fw8q60o', guideTitle: 'شرح Side Plank — مدرب رجل',
+    muscles: 'الجذع الجانبي والكتف والورك',
+    steps: ['استند على ساعد واحد واجعل المرفق تحت الكتف.', 'ارفع الحوض حتى يصبح الجسم خطًا مستقيمًا.', 'اثبت 30 ثانية ثم بدّل الجهة.'],
+    warn: 'خفف التمرين بثني الركبة السفلية إذا كان صعبًا.', illustration: 'side-plank', keywords: ['بلانك','جانبي','side','plank','core'],
+  },
+
 };
 
 export const MACHINE_LIST: Machine[] = Object.values(MACHINES);
@@ -356,27 +450,18 @@ export const MACHINE_LIST: Machine[] = Object.values(MACHINES);
  * إن لم يوجد بديل معتمد، يعرض الموقع خيار التخطي فقط.
  */
 export const ALTERNATIVES: Partial<Record<MachineId, { id: MachineId; note: string }[]>> = {
-  'chest-press': [{ id: 'pec-deck', note: 'جهاز صدر آخر ضمن برنامجك (اليوم 3).' }],
-  'pec-deck': [{ id: 'chest-press', note: 'جهاز صدر آخر ضمن برنامجك (اليومان 1 و4).' }],
-  'lat-pulldown': [{ id: 'seated-row', note: 'جهاز ظهر آخر ضمن برنامجك (اليوم 1).' }],
-  'seated-row': [{ id: 'lat-pulldown', note: 'جهاز ظهر آخر ضمن برنامجك (اليومان 1 و4).' }],
-  'shoulder-press': [{ id: 'lateral-raise', note: 'تمرين أكتاف ضمن برنامجك (اليوم 3) بدمبل خفيف.' }],
-  'lateral-raise': [{ id: 'shoulder-press', note: 'جهاز أكتاف ضمن برنامجك (اليوم 1) بوزن خفيف.' }],
-  'leg-press': [{ id: 'leg-extension', note: 'تمرين أرجل آخر ضمن برنامجك (اليوم 2).' }],
-  'leg-extension': [{ id: 'leg-press', note: 'تمرين أرجل آخر ضمن برنامجك (اليومان 2 و4).' }],
-  'leg-curl': [{ id: 'glute-bridge', note: 'يعمل على الفخذ الخلفي والمؤخرة (اليومان 2 و4).' }],
-  'calf-raise': [{ id: 'leg-press', note: 'يمكن أداء رفع السمانة على منصة جهاز ضغط الأرجل إذا كان مناسبًا وآمنًا.' }],
-  'glute-bridge': [{ id: 'leg-curl', note: 'يعمل على الفخذ الخلفي (اليوم 2).' }],
-  plank: [{ id: 'crunch', note: 'تمرين بطن آخر ضمن برنامجك (اليومان 2 و4).' }],
-  crunch: [{ id: 'plank', note: 'تمرين بطن آخر ضمن برنامجك (اليومان 1 و3).' }],
-  elliptical: [
-    { id: 'bike', note: 'الدراجة الثابتة — كارديو بنفس المدة والشدة.' },
-    { id: 'pool', note: 'المسبح — يحل محل جلسة كارديو (سباحة هادئة).' },
-  ],
-  bike: [
-    { id: 'elliptical', note: 'الأوبتيكال — كارديو بنفس المدة والشدة.' },
-    { id: 'pool', note: 'المسبح — يحل محل جلسة كارديو (سباحة هادئة).' },
-  ],
+  'chest-press': [{ id: 'incline-dumbbell-press', note: 'تمرين صدر آخر ضمن Upper B.' }],
+  'incline-dumbbell-press': [{ id: 'chest-press', note: 'جهاز صدر ثابت ضمن Upper A.' }],
+  'lat-pulldown': [{ id: 'seated-row', note: 'تمرين ظهر آخر ضمن Upper B.' }],
+  'seated-row': [{ id: 'lat-pulldown', note: 'تمرين ظهر آخر ضمن Upper A.' }],
+  'biceps-curl': [{ id: 'hammer-curl', note: 'تمرين بايسبس آخر ضمن Upper B.' }],
+  'hammer-curl': [{ id: 'biceps-curl', note: 'تمرين بايسبس آخر ضمن Upper A.' }],
+  'calf-raise': [{ id: 'seated-calf-raise', note: 'رفع السمانة جالسًا ضمن Lower B.' }],
+  'seated-calf-raise': [{ id: 'calf-raise', note: 'رفع السمانة واقفًا ضمن Lower A.' }],
+  plank: [{ id: 'side-plank', note: 'تمرين جذع آخر ضمن Lower B.' }],
+  'side-plank': [{ id: 'plank', note: 'بلانك أمامي ضمن Lower A.' }],
+  elliptical: [{ id: 'bike', note: 'الدراجة العادية خيار كارديو عند الحاجة.' }],
+  'recumbent-bike': [{ id: 'bike', note: 'إذا لم تتوفر الدراجة ذات الظهر استخدم الدراجة العادية بنفس المدة.' }],
 };
 
 /** أين يُستخدم الجهاز في البرنامج — يُحسب من بيانات الأيام (انظر program.ts). */

@@ -106,7 +106,7 @@ export function ShortSheet({
       </div>
       <div className="note-box cold">
         <b>{plan.day.focus}</b>
-        <div>كارديو {plan.cardio.minutes} د · حديد {plan.circuit ? `${plan.circuit.rounds} ${plan.circuit.rounds === 1 ? 'جولة' : 'جولات'}` : `${plan.exercises.length} تمارين`} · إطالة {plan.stretchMinutes} د</div>
+        <div>إحماء {plan.warmupMinutes} د · حديد {plan.circuit ? `${plan.circuit.rounds} ${plan.circuit.rounds === 1 ? 'جولة' : 'جولات'}` : `${plan.exercises.length} تمارين`} · كارديو {plan.cardio.minutes} د · إطالة {plan.stretchMinutes} د</div>
         {plan.dropped.length > 0 && <div className="muted" style={{ marginTop: 4 }}>يُؤجَّل: {plan.dropped.map((id) => MACHINES[id].ar).join('، ')}</div>}
       </div>
       <p className="muted" style={{ fontSize: 13.5 }}>{SHORT_NOTE}</p>

@@ -211,7 +211,7 @@ export function dayAdvice(today: string, info: WeekInfo, trainedToday: boolean, 
     return { kind: 'must', label: 'اليوم يوم تمرين', detail: `تحتاج ${sessionsWord(need)} في ${daysLeft === 1 ? 'يوم واحد' : daysLeft === 2 ? 'يومين' : daysLeft + ' أيام'} لتكتمل 4/4.` };
   }
   if (SUGGESTED_WEEKDAYS.includes(weekdayOf(today))) {
-    return { kind: 'train', label: 'يوم تمرين مقترح', detail: 'من أيامك المقترحة: الأحد · الثلاثاء · الخميس · السبت.' };
+    return { kind: 'train', label: 'يوم تمرين مقترح', detail: 'من أيامك المقترحة: السبت · الأحد · الثلاثاء · الأربعاء.' };
   }
   return { kind: 'rest', label: 'يوم راحة مقترح', detail: 'يمكنك السباحة 30 دقيقة بهدوء أو المشي الخفيف — أو التمرين إن كان يومك مناسبًا.' };
 }

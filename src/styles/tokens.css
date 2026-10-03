@@ -13,54 +13,125 @@
 @font-face { font-family: 'Thmanyah Serif Display'; font-weight: 900; font-style: normal; font-display: swap; src: url('/fonts/thmanyahserifdisplay-Black.woff2') format('woff2'); }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   --font-body: 'Thmanyah Sans', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
   --font-display: 'Thmanyah Serif Display', 'Thmanyah Sans', serif;
 
-  /* هوية B_FIT — فحم + أزرق + سماوي رياضي + كورال */
-  --bg: #050505;
-  --bg-2: #050505;
-  --surface: #151719;
-  --surface-2: #151719;
-  --ink: #F7F7F7;
-  --ink-2: #F7F7F7;
-  --muted: #929CA2;
-  --line: #303236;
-  --line-2: #303236;
+  /* Light — القيم المطلوبة */
+  --background: #F4F7F8;
+  --surface: #FFFFFF;
+  --surface-secondary: #E9EFF2;
+  --text: #182024;
+  --text-muted: #66747B;
+  --border: #D8E0E4;
+  --primary: #5598B0;
+  --primary-bright: #1AA5C8;
+  --accent: #EF5C66;
 
-  --cold: #5598B0;
-  --cold-deep: #5598B0;
-  --cold-soft: rgba(85, 152, 176, .16);
-  --cold-ink: #F7F7F7;
-  --sport: #1AA5C8;
-  --sport-soft: rgba(26, 165, 200, .16);
-  --hot: #EF5C66;
-  --hot-deep: #EF5C66;
-  --hot-soft: rgba(239, 92, 102, .15);
-  --hot-ink: #F7F7F7;
-  --danger: #EF5C66;
-  --danger-soft: rgba(239, 92, 102, .15);
-  --sand: #929CA2;
+  /* أسماء الواجهة الحالية — مربوطة مباشرة بلوحة الألوان */
+  --bg: var(--background);
+  --bg-2: #EEF3F5;
+  --surface-2: var(--surface-secondary);
+  --ink: var(--text);
+  --ink-2: var(--text);
+  --muted: var(--text-muted);
+  --line: var(--border);
+  --line-2: var(--border);
 
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, .38), 0 8px 22px -12px rgba(0, 0, 0, .72);
-  --shadow-2: 0 2px 4px rgba(0, 0, 0, .46), 0 20px 44px -20px rgba(0, 0, 0, .82);
-  --shadow-hot: 0 16px 36px -16px rgba(26, 165, 200, .42);
+  --cold: var(--primary);
+  --cold-deep: #467F94;
+  --cold-soft: rgba(85, 152, 176, .14);
+  --cold-ink: #356D82;
+  --sport: var(--primary-bright);
+  --sport-soft: rgba(26, 165, 200, .13);
+  --hot: var(--accent);
+  --hot-deep: #D84E58;
+  --hot-soft: rgba(239, 92, 102, .12);
+  --hot-ink: #C8424C;
+  --danger: var(--accent);
+  --danger-soft: rgba(239, 92, 102, .12);
+  --sand: var(--text-muted);
+
+  --shadow-1: 0 1px 2px rgba(24, 32, 36, .07), 0 10px 24px -16px rgba(24, 32, 36, .20);
+  --shadow-2: 0 2px 5px rgba(24, 32, 36, .08), 0 20px 44px -26px rgba(24, 32, 36, .28);
+  --shadow-hot: 0 16px 36px -20px rgba(26, 165, 200, .34);
 
   --r-sm: 12px;
   --r-md: 16px;
   --r-lg: 22px;
   --r-xl: 30px;
-
   --nav-h: 66px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
   --gutter: 16px;
   --maxw: 560px;
-
   --ease: cubic-bezier(.22, 1, .36, 1);
 
-  /* رسومات الأجهزة */
+  /* رسومات الأجهزة — فاتحة */
+  --tile: #FFFFFF;
+  --il-p: #5598B0;
+  --il-p2: #1AA5C8;
+  --il-p3: #467F94;
+  --il-t: #EF5C66;
+  --il-m: #66747B;
+  --il-m2: #A8B5BB;
+  --il-g: #D8E0E4;
+  --il-g2: #8B9AA1;
+  --il-floor: #E9EFF2;
+  --il-floor2: #F4F7F8;
+  --il-mat: #5598B0;
+  --il-screen: #1AA5C8;
+  --il-wave: #FFFFFF;
+  --il-water: #5598B0;
+  --il-water2: #1AA5C8;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Dark — القيم المطلوبة */
+  --background: #050505;
+  --surface: #151719;
+  --surface-secondary: #1D2023;
+  --text: #F7F7F7;
+  --text-muted: #929CA2;
+  --border: #303236;
+  --primary: #5598B0;
+  --primary-bright: #1AA5C8;
+  --accent: #EF5C66;
+
+  --bg: var(--background);
+  --bg-2: var(--background);
+  --surface-2: var(--surface-secondary);
+  --ink: var(--text);
+  --ink-2: var(--text);
+  --muted: var(--text-muted);
+  --line: var(--border);
+  --line-2: var(--border);
+
+  --cold: var(--primary);
+  --cold-deep: var(--primary);
+  --cold-soft: rgba(85, 152, 176, .16);
+  --cold-ink: #F7F7F7;
+  --sport: var(--primary-bright);
+  --sport-soft: rgba(26, 165, 200, .16);
+  --hot: var(--accent);
+  --hot-deep: var(--accent);
+  --hot-soft: rgba(239, 92, 102, .15);
+  --hot-ink: #F7F7F7;
+  --danger: var(--accent);
+  --danger-soft: rgba(239, 92, 102, .15);
+  --sand: var(--text-muted);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .38), 0 8px 22px -12px rgba(0, 0, 0, .72);
+  --shadow-2: 0 2px 4px rgba(0, 0, 0, .46), 0 20px 44px -20px rgba(0, 0, 0, .82);
+  --shadow-hot: 0 16px 36px -16px rgba(26, 165, 200, .42);
+
   --tile: #151719;
   --il-p: #5598B0;
   --il-p2: #1AA5C8;
@@ -77,10 +148,4 @@
   --il-wave: #F7F7F7;
   --il-water: #5598B0;
   --il-water2: #1AA5C8;
-}
-
-/* نحافظ على مفتاح الوضع للتوافق، لكن الهوية الآن موحّدة داكنة في الوضعين */
-:root[data-theme='dark'],
-:root[data-theme='light'] {
-  color-scheme: dark;
 }

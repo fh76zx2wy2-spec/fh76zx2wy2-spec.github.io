@@ -12,7 +12,7 @@ export function readThemePref(): ThemePref {
   } catch {
     /* ignore */
   }
-  return 'system';
+  return 'light';
 }
 
 export function applyTheme(pref: ThemePref) {
@@ -21,7 +21,9 @@ export function applyTheme(pref: ThemePref) {
   const el = document.documentElement;
   el.dataset.theme = dark ? 'dark' : 'light';
   const meta = document.querySelector('meta[name="theme-color"]:not([media])') ?? document.querySelector('meta[name="theme-color"]');
-  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', '#050505'));
+  const color = dark ? '#050505' : '#F4F7F8';
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', color));
+  document.documentElement.style.background = color;
   void meta;
   try {
     localStorage.setItem(LS, pref);

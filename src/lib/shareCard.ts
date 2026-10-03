@@ -33,17 +33,17 @@ export function downloadGymSummaryCard(s: GymSummaryShare) {
   ctx.direction = 'rtl';
   ctx.textAlign = 'right';
   const bg = ctx.createLinearGradient(0, 0, 1080, 1350);
-  bg.addColorStop(0, '#050505');
-  bg.addColorStop(1, '#151719');
+  bg.addColorStop(0, '#F4F7F8');
+  bg.addColorStop(1, '#E9EFF2');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, 1080, 1350);
 
-  ctx.fillStyle = '#151719';
+  ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
   ctx.roundRect(90, 90, 900, 1170, 54);
   ctx.fill();
 
-  ctx.fillStyle = '#F7F7F7';
+  ctx.fillStyle = '#182024';
   ctx.font = '700 64px system-ui, -apple-system, sans-serif';
   ctx.fillText('45/4', 900, 205);
   ctx.font = '700 48px system-ui, -apple-system, sans-serif';
@@ -53,7 +53,7 @@ export function downloadGymSummaryCard(s: GymSummaryShare) {
   ctx.font = '400 34px system-ui, -apple-system, sans-serif';
   ctx.fillText(s.dateLabel, 900, 372);
 
-  ctx.fillStyle = '#F7F7F7';
+  ctx.fillStyle = '#182024';
   ctx.font = '800 96px system-ui, -apple-system, sans-serif';
   ctx.fillText(s.durationLabel, 900, 560);
   ctx.font = '500 34px system-ui, -apple-system, sans-serif';
@@ -66,14 +66,14 @@ export function downloadGymSummaryCard(s: GymSummaryShare) {
   rows.push(['إنجاز الأسبوع', `${s.weekCount}/4`]);
   rows.forEach(([label, value], i) => {
     const y = 770 + i * 140;
-    ctx.fillStyle = 'rgba(255,255,255,.12)';
+    ctx.fillStyle = '#E9EFF2';
     ctx.beginPath();
     ctx.roundRect(180, y - 78, 720, 104, 26);
     ctx.fill();
     ctx.fillStyle = '#5598B0';
     ctx.font = '500 32px system-ui, -apple-system, sans-serif';
     ctx.fillText(label, 850, y - 12);
-    ctx.fillStyle = '#F7F7F7';
+    ctx.fillStyle = '#182024';
     ctx.textAlign = 'left';
     ctx.font = '800 44px system-ui, -apple-system, sans-serif';
     ctx.fillText(value, 230, y - 12);

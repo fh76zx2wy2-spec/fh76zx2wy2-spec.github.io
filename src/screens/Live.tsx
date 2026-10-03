@@ -254,7 +254,7 @@ function LiveInner({ live, onSaved, onLeave }: { live: LiveSession; onSaved: (r:
           title={stage.key === 'warmup' ? 'التسخين' : extraKind?.title ?? 'جلسة إضافية'}
           hint={
             stage.key === 'warmup'
-              ? '5 دقائق أوبتيكال أو سيكل هادئ، ثم سيت خفيف جدًا من أول تمرين.'
+              ? day?.warmupHint ?? '7 دقائق إحماء على مضمار النادي وحركة ديناميكية.'
               : stage.key === 'cardio' && day
                 ? day.cardio.note
                 : stage.kind === 'stretch' && day

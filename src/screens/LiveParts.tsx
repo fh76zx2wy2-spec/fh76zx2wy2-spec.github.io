@@ -146,6 +146,11 @@ export function ExerciseStage({
             <b>تلميح:</b> قيّمت آخر جلستين بـ «سهل». {WEIGHT_HINT}
           </div>
         )}
+        {live.day === 1 && (stage.machineId === 'biceps-curl' || stage.machineId === 'triceps-pushdown') && (
+          <div className="note-box cold" style={{ marginTop: 14 }}>
+            <b>توفير الوقت:</b> اعمل Biceps Curl ثم Triceps Pushdown بالتبادل. الراحة عمومًا 45–60 ثانية.
+          </div>
+        )}
       </section>
 
       {/* الجهاز مشغول / لا أستطيع */}
@@ -216,7 +221,7 @@ export function ExerciseStage({
         <Sheet open={guideOpen} onClose={() => setGuideOpen(false)} title={m.guideTitle ?? `طريقة أداء ${m.ar}`}>
           <div className="exercise-guide-frame">
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${m.guideYoutubeId}?playsinline=1&rel=0`}
+              src={`https://www.youtube-nocookie.com/embed/${m.guideYoutubeId}?playsinline=1&rel=0${m.guideYoutubeStartSeconds ? `&start=${m.guideYoutubeStartSeconds}` : ''}`}
               title={m.guideTitle ?? `طريقة أداء ${m.ar}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
@@ -264,7 +269,7 @@ export function TimedStage({ live, stage, now, title, hint }: { live: LiveSessio
   return (
     <div className="stack live-stage">
       <section className="card center timed">
-        <Illustration id={stage.kind === 'stretch' ? 'stretch' : illId(stage.machineId)} className="sm timed-ill" />
+        <Illustration id={stage.kind === 'stretch' ? 'stretch' : illId(seg?.station ?? stage.machineId)} className="sm timed-ill" />
         <div className="eyebrow">{stage.key === 'warmup' ? 'التسخين' : stage.kind === 'cardio' ? 'الكارديو' : stage.kind === 'stretch' ? 'الإطالة' : 'جلسة إضافية'}</div>
         <h2 className="mname" style={{ marginTop: 2 }}>{name.ar}</h2>
         {name.en && <div className="en muted mname-en">{name.en}</div>}
@@ -276,7 +281,7 @@ export function TimedStage({ live, stage, now, title, hint }: { live: LiveSessio
         </div>
         {seg && (
           <div className={`seg-now ${seg.kind} ${seg.station ? 'station' : ''}`}>
-            {seg.station && <div className="seg-station-kicker">المحطة {segIdx + 1} من {segs.length}</div>}
+            {seg.station && <div className="seg-station-kicker">المرحلة {segIdx + 1} من {segs.length}</div>}
             <div className="row-between">
               <b>{seg.stationLabel ?? seg.label}</b>
               <span className="num">{mmss(segLeft)}</span>
@@ -290,7 +295,7 @@ export function TimedStage({ live, stage, now, title, hint }: { live: LiveSessio
 
       {segs.length > 1 && (
         <section className="card">
-          <div className="card-title" style={{ marginBottom: 10 }}>{mixedCardio ? 'محطات الكارديو' : 'جدول الكارديو'}</div>
+          <div className="card-title" style={{ marginBottom: 10 }}>{mixedCardio ? 'خطة الكارديو' : stage.key === 'warmup' ? 'خطة الإحماء' : stage.kind === 'stretch' ? 'خطة الإطالة' : 'جدول المرحلة'}</div>
           <div className="segline" aria-hidden="true">
             {segs.map((s, i) => (
               <i key={i} className={`${s.kind} ${i === segIdx ? 'cur' : ''} ${i < segIdx ? 'past' : ''}`} style={{ flexGrow: s.seconds }} />

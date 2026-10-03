@@ -125,7 +125,7 @@ export default function Settings() {
         {pushState === 'enabled' ? (
           <>
             <div className="note-box cold">
-              <b>تنبيهات 45/4:</b> دخول رفيقك وخروجه، إكمال 4/4، التشجيعات بينكما، وتنبيهك عند 45 دقيقة ثم عند الساعة إذا بقيت الزيارة مفتوحة.
+              <b>تنبيهات 45/4:</b> دخول رفيقك وخروجه، إكمال 4/4، التشجيعات بينكما، تنبيهك عند 45 دقيقة ثم عند الساعة إذا بقيت الزيارة مفتوحة، وتذكير شخصي إذا مرّ يومان كاملان منذ آخر زيارة للنادي.
             </div>
             <button className="btn btn-primary btn-block" disabled={pushBusy} onClick={() => void testPush()}><Icon name="bolt" /> أرسل لي إشعارًا تجريبيًا حقيقيًا</button>
             <button className="btn btn-ghost btn-block" disabled={pushBusy} onClick={() => void turnOffPush()}>إيقاف إشعارات هذا الجهاز</button>

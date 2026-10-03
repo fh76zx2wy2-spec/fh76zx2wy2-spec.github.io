@@ -51,11 +51,12 @@
 .ticket { position: relative; border-radius: var(--r-xl); overflow: hidden; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-2); }
 .ticket-top {
   position: relative; color: #fff; padding: 22px 22px 34px;
-  background: linear-gradient(140deg, #151719 0%, #5598B0 58%, #1AA5C8 100%);
+  background: linear-gradient(140deg, #467F94 0%, #5598B0 58%, #1AA5C8 100%);
   overflow: hidden;
 }
-:root[data-theme='dark'] .ticket-top, :root[data-theme='light'] .ticket-top { background: linear-gradient(140deg, #151719 0%, #5598B0 58%, #1AA5C8 100%); }
-.ticket-top.cold { background: linear-gradient(140deg, #151719 0%, #5598B0 58%, #1AA5C8 100%); }
+:root[data-theme='dark'] .ticket-top { background: linear-gradient(140deg, #151719 0%, #5598B0 58%, #1AA5C8 100%); }
+.ticket-top.cold { background: linear-gradient(140deg, #467F94 0%, #5598B0 58%, #1AA5C8 100%); }
+:root[data-theme='dark'] .ticket-top.cold { background: linear-gradient(140deg, #151719 0%, #5598B0 58%, #1AA5C8 100%); }
 .ticket-top::after {
   content: ''; position: absolute; inset-inline: 0; bottom: -1px; height: 14px;
   background-image: radial-gradient(circle at 10px 14px, transparent 7px, var(--surface) 7.5px);

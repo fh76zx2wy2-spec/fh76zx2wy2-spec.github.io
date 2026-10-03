@@ -58,10 +58,10 @@ export function startLiveFromPlan(
         key: 'warmup',
         kind: 'cardio',
         block: 0,
-        machineId: plan.cardio.machineId,
+        machineId: 'warmup-track',
         seconds: plan.warmupMinutes * 60,
         cardioMode: 'steady',
-        segments: [],
+        segments: plan.warmupSegments,
         reps: `${plan.warmupMinutes} د`,
       }),
     );
@@ -120,7 +120,7 @@ export function startLiveFromPlan(
   }
 
   stages.push(
-    baseStage({ key: 'stretch', kind: 'stretch', block: lastBlock + 1, machineId: 'stretch', seconds: plan.stretchMinutes * 60 }),
+    baseStage({ key: 'stretch', kind: 'stretch', block: lastBlock + 1, machineId: 'stretch', seconds: plan.stretchMinutes * 60, segments: plan.stretchSegments }),
   );
   return {
     id: uuid(),

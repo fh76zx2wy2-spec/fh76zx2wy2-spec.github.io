@@ -115,22 +115,42 @@ async function sweep() {
     const { data: active } = await admin.from('gym_visits')
       .select('id,arrived_at').eq('user_id', u.id).is('left_at', null)
       .order('arrived_at', { ascending: false }).limit(1).maybeSingle();
-    if (!active?.arrived_at) continue;
 
-    const minutes = Math.floor((now.getTime() - Date.parse(active.arrived_at)) / 60000);
-    if (minutes >= 45) {
-      delivered += await sendOnce(u.id, 'visit-45', active.id, {
-        title: '45/4 · وصلت 45 دقيقة ✅',
-        body: `يا ${name}، أكملت 45 دقيقة في النادي. كفو عليك 🔥`,
-        tag: `visit-45-${active.id}`,
-        url: '/',
-      });
+    if (active?.arrived_at) {
+      const minutes = Math.floor((now.getTime() - Date.parse(active.arrived_at)) / 60000);
+      if (minutes >= 45) {
+        delivered += await sendOnce(u.id, 'visit-45', active.id, {
+          title: '45/4 · وصلت 45 دقيقة ✅',
+          body: `يا ${name}، أكملت 45 دقيقة في النادي. كفو عليك 🔥`,
+          tag: `visit-45-${active.id}`,
+          url: '/',
+        });
+      }
+      if (minutes >= 60) {
+        delivered += await sendOnce(u.id, 'visit-60', active.id, {
+          title: '45/4 · جلست ساعة 🔥',
+          body: `يا ${name}، مرّت ساعة منذ وصولك. إذا كنت خرجت من النادي افتح 45/4 وسجّل خروجك.`,
+          tag: `visit-60-${active.id}`,
+          url: '/',
+        });
+      }
+      continue;
     }
-    if (minutes >= 60) {
-      delivered += await sendOnce(u.id, 'visit-60', active.id, {
-        title: '45/4 · جلست ساعة 🔥',
-        body: `يا ${name}، مرّت ساعة منذ وصولك. إذا كنت خرجت من النادي افتح 45/4 وسجّل خروجك.`,
-        tag: `visit-60-${active.id}`,
+
+    // تذكير بعد 48 ساعة كاملة من آخر مغادرة للنادي. لا نرسل شيئًا للحساب الجديد
+    // الذي لا يملك زيارة سابقة، ولا نكرر التذكير خلال نفس فترة الانقطاع.
+    const { data: latest } = await admin.from('gym_visits')
+      .select('id,arrived_at,left_at').eq('user_id', u.id)
+      .order('arrived_at', { ascending: false }).limit(1).maybeSingle();
+    const lastGymAt = latest?.left_at ?? latest?.arrived_at;
+    if (!latest?.id || !lastGymAt) continue;
+
+    const awayHours = (now.getTime() - Date.parse(lastGymAt)) / 3_600_000;
+    if (awayHours >= 48) {
+      delivered += await sendOnce(u.id, 'away-48h', latest.id, {
+        title: '45/4 · النادي فاقدك 😔',
+        body: `النادي فاقدك يا ${name} 😔 صار لك يومين ما رحت. نبي نشوفك قريب 💙`,
+        tag: `away-48h-${latest.id}`,
         url: '/',
       });
     }

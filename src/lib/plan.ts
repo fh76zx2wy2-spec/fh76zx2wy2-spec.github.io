@@ -9,6 +9,8 @@ import {
   SESSION_STRUCTURE,
   SHORT_PRESETS,
   buildCardioSegments,
+  buildStretchSegments,
+  buildWarmupSegments,
   phaseForWeek,
   type CardioSegment,
   type DayDef,
@@ -35,6 +37,7 @@ export interface ResolvedPlan {
   comeback: boolean;
   short: ShortPreset | null;
   warmupMinutes: number;
+  warmupSegments: CardioSegment[];
   weightsFirst: boolean;
   cardio: {
     machineId: MachineId;
@@ -43,6 +46,7 @@ export interface ResolvedPlan {
     segments: CardioSegment[];
     note: string;
   };
+  stretchSegments: CardioSegment[];
   exercises: ResolvedExercise[];
   circuit: { rounds: number; optionalFrom: number | null; roundRest: number } | null;
   stretchMinutes: number;
@@ -101,14 +105,10 @@ export function resolvePlan(
   const dropped: MachineId[] = [];
 
   if (preset) {
+    warmupMinutes = preset.warmup;
     cardioMinutes = preset.cardio;
     stretch = preset.stretch;
-    if (ACTIVE_PROGRAM.key === 'abdulsalam' && preset.minutes === 45) {
-      // ملف عبدالسلام: عند ضيق الوقت إلى 45 دقيقة يُحذف التمرين الخامس ويُخفض الكارديو إلى 10 دقائق.
-      const removed = exercises.slice(4);
-      removed.forEach((e) => dropped.push(e.machineId));
-      exercises = exercises.slice(0, 4);
-    } else if (circuit) {
+    if (circuit) {
       // الدائري: جولة أو جولتان بحسب الميزانية
       const perRound = (exercises.length * (40 + 30)) / 60 + 1;
       circuit = { rounds: Math.max(1, Math.min(2, Math.floor(preset.iron / perRound))), optionalFrom: null, roundRest: circuit.roundRest };
@@ -131,6 +131,8 @@ export function resolvePlan(
 
   const mode = cardioMinutes < 12 ? 'steady' : day.cardio.mode;
   const segments = buildCardioSegments(mode, cardioMinutes, phase.id, day.id);
+  const warmupSegments = buildWarmupSegments(day.id, warmupMinutes);
+  const stretchSegments = buildStretchSegments(day.id, stretch);
 
   const totalMinutes = preset ? preset.minutes : SESSION_STRUCTURE.total;
 
@@ -140,10 +142,12 @@ export function resolvePlan(
     comeback,
     short: preset,
     warmupMinutes,
+    warmupSegments,
     weightsFirst: ACTIVE_PROGRAM.weightsFirst,
     cardio: { machineId: day.cardio.machineId, mode, minutes: cardioMinutes, segments, note: day.cardio.note },
     exercises,
     circuit,
+    stretchSegments,
     stretchMinutes: stretch,
     totalMinutes,
     dropped,

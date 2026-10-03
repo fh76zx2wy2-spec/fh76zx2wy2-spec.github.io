@@ -39,7 +39,7 @@ export const nowIso = () => new Date().toISOString();
 export function defaultSettings(userId: string): Settings {
   return {
     user_id: userId,
-    theme: 'system',
+    theme: 'light',
     program_start_date: null,
     week_start: 0,
     vibration: true,
