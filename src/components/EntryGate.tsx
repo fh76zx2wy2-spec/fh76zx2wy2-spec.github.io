@@ -2,13 +2,14 @@ import { useMemo } from 'react';
 import { ACTIVE_PROGRAM } from '../data/program';
 import { todayISO } from '../lib/dates';
 import { motivationForDate } from '../lib/profile';
-import { usePrivateProfilePhoto } from '../lib/privateProfilePhoto';
+import { useMyTeamProfile } from '../lib/teamProfile';
 import { Logo } from './ui';
 
 export function EntryGate({ onEnter }: { onEnter: () => void }) {
-  const photo = usePrivateProfilePhoto();
+  const profile = useMyTeamProfile();
+  const photo = profile.avatar_url;
   const quote = useMemo(() => motivationForDate(todayISO()), []);
-  const name = ACTIVE_PROGRAM.defaultName;
+  const name = profile.display_name || ACTIVE_PROGRAM.defaultName;
   return (
     <main className={`entry-gate ${ACTIVE_PROGRAM.key}`}>
       <span className="entry-orb a" aria-hidden="true" />

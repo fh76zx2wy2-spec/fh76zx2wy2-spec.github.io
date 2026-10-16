@@ -10,6 +10,7 @@ import { useDerived } from '../lib/derived';
 import { Footer, PageHeader, Sheet, Switch, useToast } from '../components/ui';
 import { Icon } from '../components/Icon';
 import { disablePush, enablePush, getPushState, sendTestPush, type PushState } from '../lib/push';
+import { useMyTeamProfile } from '../lib/teamProfile';
 
 export default function Settings() {
   const d = useDerived();
@@ -24,6 +25,8 @@ export default function Settings() {
   const [pushState, setPushState] = useState<PushState>('prompt');
   const [pushBusy, setPushBusy] = useState(false);
   const pending = db?.pending.length ?? 0;
+  const myProfile = useMyTeamProfile();
+  const isAdmin = myProfile.is_admin || ACTIVE_PROGRAM.key === 'ziyad';
 
   useEffect(() => { void getPushState().then(setPushState); }, []);
 
@@ -125,7 +128,7 @@ export default function Settings() {
         {pushState === 'enabled' ? (
           <>
             <div className="note-box cold">
-              <b>تنبيهات 45/4:</b> دخول أعضاء الفريق وخروجهم، إكمال 4/4، التشجيعات بينكم، تنبيهك عند 45 دقيقة ثم عند الساعة إذا بقيت الزيارة مفتوحة، وتذكير شخصي كل يومين من الانقطاع عند الساعة 4 مساءً.
+              <b>تنبيهات 45/4:</b> {isAdmin ? 'دخول أعضاء فريقك وخروجهم وإكمالهم 4/4' : 'دخول زياد وخروجه وإكماله 4/4'}، التشجيعات، تنبيهك عند 45 دقيقة ثم عند الساعة إذا بقيت الزيارة مفتوحة، وتذكير شخصي كل يومين من الانقطاع عند الساعة 4 مساءً.
             </div>
             <button className="btn btn-primary btn-block" disabled={pushBusy} onClick={() => void testPush()}><Icon name="bolt" /> أرسل لي إشعارًا تجريبيًا حقيقيًا</button>
             <button className="btn btn-ghost btn-block" disabled={pushBusy} onClick={() => void turnOffPush()}>إيقاف إشعارات هذا الجهاز</button>
@@ -179,9 +182,19 @@ export default function Settings() {
         </button>
       </section>
 
+      {isAdmin && (
+        <section className="card pad-0">
+          <Link to="/admin" className="list-row admin-settings-link">
+            <span className="ic cold"><Icon name="gear" /></span>
+            <div className="grow"><div className="t">إدارة الأعضاء والزيارات</div><div className="s">إضافة عضو من الجوال · صورة شخصية · تعديل الزيارات</div></div>
+            <Icon name="chevL" className="chev" />
+          </Link>
+        </section>
+      )}
+
       <section className="card stack">
         <div className="card-title">الحساب</div>
-        <div className="stat-line"><Icon name="target" /><span>الهوية: <b>الكوتش / {ACTIVE_PROGRAM.defaultName}</b></span></div>
+        <div className="stat-line"><Icon name="target" /><span>الهوية: <b>الكوتش / {myProfile.display_name || ACTIVE_PROGRAM.defaultName}</b></span></div>
         <div className="stat-line"><Icon name="link" /><span className="ltr" dir="ltr" style={{ overflowWrap: 'anywhere' }}>{user?.email}</span></div>
         <div className="row-between">
           <div className="stat-line"><Icon name="cloud" /><span>{syncLabel}{offlineSession ? ' · جلسة محفوظة' : ''}</span></div>

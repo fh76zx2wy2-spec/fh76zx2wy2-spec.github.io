@@ -17,8 +17,8 @@ import { durationLabel, timeLabel } from '../lib/format';
 import { BUDDY_REACTION_LABEL, useBuddy, type BuddyReactionKind, type BuddyStat } from '../lib/buddy';
 import { MemberSummarySheet } from '../components/MemberSummarySheet';
 import { buildAchievements } from '../lib/achievements';
-import { coachName, dayIcon } from '../lib/profile';
-import { usePrivateProfilePhoto } from '../lib/privateProfilePhoto';
+import { dayIcon } from '../lib/profile';
+import { useMyTeamProfile } from '../lib/teamProfile';
 import { enablePush, getPushState, notifyBuddyArrival, notifyBuddyFourOfFour, notifyBuddyLeft, notifyBuddyReaction, type PushState } from '../lib/push';
 import { downloadGymSummaryCard, shareGymSummary, type GymSummaryShare } from '../lib/shareCard';
 
@@ -58,7 +58,8 @@ export default function Home() {
   const { toast } = useToast();
   const buddy = useBuddy();
 
-  const name = coachName();
+  const myProfile = useMyTeamProfile();
+  const name = myProfile.display_name || ACTIVE_PROGRAM.defaultName;
   const { today, info, attendanceInfo, suggested, position, stats, settings, curWeekStart, trainedToday } = d;
   const live = db?.live ?? null;
   const activeVisit = db?.visits.find((v) => !v.left_at) ?? null;
@@ -70,7 +71,7 @@ export default function Home() {
   const buddyMe = buddy.me;
   const teamStats = buddy.stats;
   const [memberOpen, setMemberOpen] = useState<BuddyStat | null>(null);
-  const coachPhoto = usePrivateProfilePhoto();
+  const coachPhoto = myProfile.avatar_url;
   const [pushState, setPushState] = useState<PushState>('prompt');
   const achievements = buildAchievements(db?.sessions ?? [], db?.visits ?? [], buddyMe?.streak_4of4 ?? stats.streak.current, stats.weeksComplete);
   const isRestDay = d.advice.kind === 'rest' && !trainedToday && !info.complete;
@@ -351,7 +352,7 @@ export default function Home() {
             {teamStats.map((b) => (
               <button type="button" className={`buddy-period-person member-tap ${b.in_gym ? 'active' : ''}`} key={b.user_id} onClick={() => setMemberOpen(b)}>
                 <span className="member-card-head">
-                  {b.email === 'aboomar335@gmail.com' ? <img className="member-mini-photo" src="/coaches/dhaidan.jpg" alt="" /> : <span className="member-mini-avatar">{b.display_name.slice(0,1)}</span>}
+                  {b.avatar_url ? <img className="member-mini-photo" src={b.avatar_url} alt="" /> : <span className="member-mini-avatar">{b.display_name.slice(0,1)}</span>}
                   <span>{b.user_id === buddyMe.user_id ? 'أنت' : b.display_name}{b.in_gym ? ' · بالنادي 🔥' : ''}</span>
                 </span>
                 <b className="num">{b.weekly_sessions}/4</b>
@@ -541,8 +542,8 @@ export default function Home() {
       <section className="card buddy-card team-card" aria-label="فريق 45/4">
         <div className="row-between buddy-head">
           <div>
-            <div className="eyebrow">فريق 45/4</div>
-            <div className="card-title">زياد · عبدالسلام · ضيدان 👥</div>
+            <div className="eyebrow">{myProfile.is_admin ? 'فريق 45/4' : 'منافستك الخاصة'}</div>
+            <div className="card-title">{myProfile.is_admin ? (teamStats.length ? teamStats.map((m) => m.user_id === buddyMe?.user_id ? 'أنت' : m.display_name).join(' · ') : 'أعضاء 45/4') : 'أنت · زياد 🔒'}</div>
           </div>
           <button type="button" className="icon-btn" onClick={() => void buddy.refresh()} aria-label="تحديث"><Icon name="undo" size={18} /></button>
         </div>
@@ -571,7 +572,7 @@ export default function Home() {
               {teamStats.map((b) => (
                 <button type="button" className={`buddy-person member-tap ${b.in_gym ? 'active' : ''}`} key={b.user_id} onClick={() => setMemberOpen(b)}>
                   <div className="team-person-top">
-                    {b.email === 'aboomar335@gmail.com' ? <img className="team-person-photo" src="/coaches/dhaidan.jpg" alt="صورة الكوتش ضيدان" /> : <span className="team-person-avatar">{b.display_name.slice(0,1)}</span>}
+                    {b.avatar_url ? <img className="team-person-photo" src={b.avatar_url} alt={`صورة ${b.display_name}`} /> : <span className="team-person-avatar">{b.display_name.slice(0,1)}</span>}
                     <div><div className="buddy-name">{b.user_id === buddyMe.user_id ? 'أنت' : b.display_name}{b.in_gym ? ' · بالنادي' : ''}</div><small>{b.user_id.startsWith('pending:') ? 'بانتظار أول دخول' : 'اضغط لعرض الزيارات'}</small></div>
                   </div>
                   <div className="buddy-score num">{b.weekly_sessions}/4</div>
@@ -582,11 +583,11 @@ export default function Home() {
               ))}
             </div>
             <div className="buddy-challenge">
-              <span className="buddy-challenge-label">تحدي الأسبوع · الفريق كامل</span>
+              <span className="buddy-challenge-label">{myProfile.is_admin ? 'تحدي الأسبوع · الفريق كامل' : 'تحدي الأسبوع · أنت وزياد'}</span>
               {(() => {
                 const max = Math.max(...teamStats.map((m) => m.weekly_sessions));
                 const leaders = teamStats.filter((m) => m.weekly_sessions === max);
-                if (teamStats.every((m) => m.weekly_sessions >= 4)) return '🏆 الفريق كامل أكمل 4/4 هذا الأسبوع';
+                if (teamStats.every((m) => m.weekly_sessions >= 4)) return myProfile.is_admin ? '🏆 الفريق كامل أكمل 4/4 هذا الأسبوع' : '🏆 أنتما أكملتما 4/4 هذا الأسبوع';
                 if (leaders.length === teamStats.length) return `التحدي متعادل ${max}/4 — من يتقدم أول؟`;
                 return `${leaders.map((m) => m.user_id === buddyMe.user_id ? 'أنت' : m.display_name).join(' و')} في الصدارة بـ ${max}/4 🔥`;
               })()}
@@ -598,7 +599,7 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <div className="buddy-privacy">اضغط على اسم أي شخص لعرض ملخص الحضور والزيارات. الأوزان والقياسات تبقى خاصة بكل حساب.</div>
+            <div className="buddy-privacy">{myProfile.is_admin ? 'بصفتك الأدمن ترى كل الأعضاء. الأوزان والقياسات تبقى خاصة بكل حساب.' : 'هذه المنافسة خاصة بينك وبين زياد فقط. لا تظهر لك حسابات الأعضاء الآخرين، ولا تظهر بياناتك لهم.'}</div>
           </>
         )}
       </section>

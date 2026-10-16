@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './auth';
-
-
-export const TEAM_MEMBERS = [
-  { email: 'z062496@gmail.com', display_name: 'زياد' },
-  { email: 'amk157662@gmail.com', display_name: 'عبدالسلام' },
-  { email: 'aboomar335@gmail.com', display_name: 'ضيدان' },
-] as const;
+import { signedAvatarUrl } from './teamProfile';
 
 export interface MemberVisit {
   id: string;
@@ -28,8 +22,11 @@ export type BuddyReactionKind = 'kfu' | 'fire' | 'beatme' | 'yourturn' | 'beast4
 
 export interface BuddyStat {
   user_id: string;
+  member_id?: string | null;
   display_name: string;
   email: string;
+  avatar_path?: string | null;
+  avatar_url?: string | null;
   weekly_sessions: number;
   weekly_visits: number;
   weekly_visit_seconds: number;
@@ -60,7 +57,6 @@ export const BUDDY_REACTION_LABEL: Record<BuddyReactionKind, string> = {
   yourturn: '👉 اليوم عليك',
   beast4: '🔥 4/4 يا وحش',
 };
-
 
 export interface BuddyAttendanceDay {
   user_id: string;
@@ -104,6 +100,7 @@ export function useBuddy() {
       if (r.error) throw r.error;
       const normalized = ((s.data ?? []) as BuddyStat[]).map((x) => ({
         ...x,
+        user_id: String(x.user_id ?? `pending:${x.email}`),
         weekly_sessions: Number(x.weekly_sessions ?? 0),
         weekly_visits: Number(x.weekly_visits ?? 0),
         weekly_visit_seconds: Number(x.weekly_visit_seconds ?? 0),
@@ -119,16 +116,11 @@ export function useBuddy() {
         streak_4of4: Number(x.streak_4of4 ?? 0),
         in_gym: Boolean(x.in_gym),
       }));
-      const merged: BuddyStat[] = TEAM_MEMBERS.map((member) => normalized.find((x) => x.email.toLowerCase() === member.email) ?? ({
-        user_id: `pending:${member.email}`,
-        display_name: member.display_name,
-        email: member.email,
-        weekly_sessions: 0, weekly_visits: 0, weekly_visit_seconds: 0,
-        monthly_visits: 0, monthly_visit_seconds: 0, all_visits: 0, all_visit_seconds: 0,
-        first_arrived_at: null, last_arrived_at: null, last_left_at: null, last_visit_seconds: 0,
-        in_gym: false, active_arrived_at: null, streak_4of4: 0,
-      } as BuddyStat));
-      setStats(merged);
+      const withAvatars = await Promise.all(normalized.map(async (x) => ({
+        ...x,
+        avatar_url: await signedAvatarUrl(x.avatar_path ?? null, x.email),
+      })));
+      setStats(withAvatars);
       setReactions((r.data ?? []) as BuddyReaction[]);
       setError(null);
     } catch (e) {
@@ -151,7 +143,7 @@ export function useBuddy() {
       const { data, error: sendError } = await supabase.rpc('send_buddy_reaction', { p_kind: kind });
       if (sendError) throw sendError;
       await refresh();
-      return String(data ?? 'الرفاق');
+      return String(data ?? 'الفريق');
     } finally {
       setSending(null);
     }
@@ -165,7 +157,7 @@ export function useBuddy() {
     () => stats.filter((s) => s.email.toLowerCase() !== user?.email.toLowerCase()),
     [stats, user],
   );
-  const buddy = others[0] ?? null; // توافق مع الشاشات القديمة أثناء الانتقال من شخصين إلى فريق.
+  const buddy = others[0] ?? null;
 
   return { me, buddy, others, stats, reactions, latestReaction: reactions[0] ?? null, loading, error, sending, refresh, sendReaction };
 }
