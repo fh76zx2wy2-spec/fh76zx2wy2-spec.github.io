@@ -14,6 +14,8 @@ export interface Machine {
   group: MachineGroup;
   /** فيديو شرح قصير من مدرب رجل — يُفتح داخل 45/4 */
   guideYoutubeId?: string;
+  /** بديل داخلي: بحث يوتيوب مخصص للتمرين عندما نريد فيديوهات خاصة بكل بديل */
+  guideYoutubeQuery?: string;
   guideYoutubeStartSeconds?: number;
   guideTitle?: string;
   /** العضلات المستهدفة */
@@ -22,7 +24,7 @@ export interface Machine {
   steps: string[];
   /** تنبيه مهم إن وُجد */
   warn?: string;
-  illustration: IllustrationId;
+  illustration: IllustrationId | string;
   /** كلمات إضافية للبحث في دليل الأجهزة */
   keywords?: string[];
 }
@@ -456,13 +458,13 @@ const variant = (
   ar: string,
   en: string,
   muscles: string,
-  illustration: IllustrationId,
+  illustration: IllustrationId | string,
   guideYoutubeId: string,
   guideTitle: string,
   steps: string[],
   warn: string,
   keywords: string[] = [],
-): Machine => ({ id, ar, en, group: 'strength', muscles, illustration, guideYoutubeId, guideTitle, steps, warn, keywords });
+): Machine => ({ id, ar, en, group: 'strength', muscles, illustration: id, guideYoutubeQuery: `${en} correct technique male coach tutorial`, guideTitle: `شرح ${ar} — تعليمات خاصة بالتمرين`, steps, warn, keywords });
 
 Object.assign(MACHINES, {
   // الصدر — دفع أفقي
@@ -562,6 +564,10 @@ Object.assign(MACHINES, {
   'cable-pull-through': variant('cable-pull-through','Cable Pull-Through','Cable Pull-Through','المؤخرة والفخذ الخلفي','hip-thrust','SEdqd1n0cvg','شرح نمط تمديد الورك — مدرب رجل',['قف وظهرك للبكرة السفلية والحبل بين الرجلين.','ادفع الوركين للخلف ثم مد الورك للأمام.','حافظ على ظهر محايد طوال الحركة.'],'الحركة من الورك لا من أسفل الظهر.',['مؤخرة','cable','hinge']),
   'glute-bridge-machine': variant('glute-bridge-machine','جهاز Glute Bridge','Glute Bridge Machine','المؤخرة والفخذ الخلفي','glute-bridge','8bbE64NuDTU','شرح Glute Bridge — مدرب رجل',['ثبت الظهر والقدمين حسب الجهاز.','ارفع الحوض بشد المؤخرة.','انزل ببطء دون ارتداد.'],'حافظ على البطن مشدودًا.',['مؤخرة','bridge','machine']),
 
+  // خيارات ترايسبس دفع للأسفل — نفس مفصل الحركة، وليس ديبس أو تمديد فوق الرأس.
+  'single-arm-triceps-pushdown': variant('single-arm-triceps-pushdown','ترايسبس كيبل يد واحدة','Single-Arm Cable Triceps Pushdown','الترايسبس','triceps-pushdown','','',['ثبت المرفق بجانب الجذع أمام البكرة العليا.','مد الساعد للأسفل دون تأرجح الكتف.','ارجع ببطء ثم بدّل الذراع.'],'لا تدفع بمفصل الكتف بدل المرفق.',['ترايسبس','يد واحدة']),
+  'vbar-triceps-pushdown': variant('vbar-triceps-pushdown','ترايسبس كيبل مقبض V','V-Bar Triceps Pushdown','الترايسبس','triceps-pushdown','','',['ضع مقبض V على البكرة العليا وثبت المرفقين.','مد الذراعين للأسفل بتحكم.','ارجع ببطء دون ابتعاد المرفقين للأمام.'],'تحكم في المعصم، وتجنب تقويس الظهر.',['ترايسبس','v bar']),
+  'reverse-grip-triceps-pushdown': variant('reverse-grip-triceps-pushdown','ترايسبس قبضة معكوسة','Reverse-Grip Triceps Pushdown','الترايسبس','triceps-pushdown','','',['أمسك البار بقبضة راحة اليد للأعلى.','حافظ على المرفقين قرب الجذع.','مد الساعدين للأسفل بوزن خفيف ثم ارجع بتحكم.'],'استخدم وزنًا أخف للمحافظة على المعصم.',['ترايسبس','قبضة معكوسة']),
   // الجذع
   'dead-bug': variant('dead-bug','Dead Bug','Dead Bug','الجذع العميق والتحكم بالحوض','plank','fqzUlmyTpJk','شرح ثبات الجذع — مدرب رجل',['استلقِ وارفع الذراعين والركبتين 90 درجة.','مد ذراعًا والرجل المقابلة ببطء دون رفع أسفل الظهر.','ارجع وبدّل الجهة.'],'قلل المدى إذا بدأ أسفل الظهر يبتعد عن الأرض.',['بطن','core','dead bug']),
   'bird-dog': variant('bird-dog','Bird Dog','Bird Dog','الجذع والظهر والتوازن','plank','fqzUlmyTpJk','شرح ثبات الجذع — مدرب رجل',['ابدأ على أربع والظهر محايد.','مد ذراعًا والرجل المقابلة دون دوران الحوض.','ارجع وبدّل الجهة.'],'الحركة بطيئة؛ لا ترفع الرجل أعلى من الجذع.',['بطن','core','bird dog']),
@@ -580,30 +586,73 @@ export const EXERCISE_POOLS: Record<string, ExercisePool> = {
   chestIncline: { id:'chestIncline', label:'أعلى الصدر — دفع مائل', cue:'اختر تمرينًا واحدًا مائلًا لأعلى الصدر.', options:[
     opt('incline-dumbbell-press','دمبل','المقترح الأساسي'), opt('incline-machine-press','جهاز','أثبت وأسهل في الإعداد'), opt('incline-smith-press','سميث','مسار ثابت'), opt('incline-plate-loaded-press','Plate Loaded','مقاومة حرة على جهاز'), opt('incline-cable-press','كيبل','شد مستمر'), opt('low-incline-dumbbell-press','دمبل','ميل خفيف ومريح') ]},
   verticalPull: { id:'verticalPull', label:'الظهر — سحب رأسي', cue:'اختر تمرين سحب من أعلى إلى أسفل.', options:[
-    opt('lat-pulldown','جهاز','المقترح الأساسي'), opt('neutral-grip-pulldown','جهاز','قبضة محايدة'), opt('close-grip-pulldown','جهاز','قبضة ضيقة'), opt('single-arm-pulldown','كيبل','يد واحدة'), opt('assisted-pullup','جهاز','عقلة بمساعدة'), opt('plate-loaded-high-row','Plate Loaded','سحب مرتفع'), opt('machine-pullover','جهاز','عزل اللات') ]},
+    opt('lat-pulldown','جهاز','المقترح الأساسي'), opt('neutral-grip-pulldown','جهاز','قبضة محايدة'), opt('close-grip-pulldown','جهاز','قبضة ضيقة'), opt('single-arm-pulldown','كيبل','يد واحدة'), opt('assisted-pullup','جهاز','عقلة بمساعدة') ]},
   horizontalRow: { id:'horizontalRow', label:'الظهر — تجديف أفقي', cue:'اختر Row واحدًا واسحب باتجاه الجذع.', options:[
     opt('seated-row','جهاز','المقترح الأساسي'), opt('chest-supported-row','جهاز','مسند صدر وثبات أكبر'), opt('cable-row-neutral','كيبل','قبضة محايدة'), opt('plate-loaded-row','Plate Loaded','مقاومة مستقلة'), opt('one-arm-dumbbell-row','دمبل','يد واحدة'), opt('single-arm-cable-row','كيبل','تحكم مستقل'), opt('tbar-row-machine','جهاز','T-Bar بمسند') ]},
   shoulderPress: { id:'shoulderPress', label:'الكتف — دفع رأسي', cue:'اختر تمرين ضغط كتف واحدًا.', options:[
-    opt('shoulder-press','جهاز','المقترح الأساسي'), opt('seated-dumbbell-shoulder-press','دمبل','حرية حركة'), opt('smith-shoulder-press','سميث','مسار ثابت'), opt('plate-loaded-shoulder-press','Plate Loaded','جهاز محمل بالأقراص'), opt('arnold-press','دمبل','مسار متغير'), opt('single-arm-cable-shoulder-press','كيبل','يد واحدة'), opt('landmine-press','لاندماين','زاوية ألطف على الكتف') ]},
+    opt('shoulder-press','جهاز','المقترح الأساسي'), opt('seated-dumbbell-shoulder-press','دمبل','حرية حركة'), opt('smith-shoulder-press','سميث','مسار ثابت'), opt('plate-loaded-shoulder-press','Plate Loaded','جهاز محمل بالأقراص'), opt('arnold-press','دمبل','مسار متغير'), opt('single-arm-cable-shoulder-press','كيبل','يد واحدة') ]},
   rearDelt: { id:'rearDelt', label:'الكتف الخلفي', cue:'اختر تمرينًا واحدًا للكتف الخلفي وأعلى الظهر.', options:[
-    opt('face-pull','كيبل','المقترح الأساسي'), opt('rope-face-pull','كيبل','حبل ومسار مضبوط'), opt('reverse-pec-deck','جهاز','ثابت وواضح'), opt('rear-delt-cable-fly','كيبل','شد مستمر'), opt('rear-delt-machine','جهاز','عزل مباشر'), opt('band-face-pull','مطاط','بديل سريع'), opt('incline-rear-delt-raise','دمبل','على بنش مائل') ]},
+    opt('face-pull','كيبل','المقترح الأساسي'), opt('rope-face-pull','كيبل','فيس بول بالحبل'), opt('band-face-pull','مطاط','فيس بول بالمطاط') ]},
+  rearDeltFly: { id:'rearDeltFly', label:'الكتف الخلفي — رفرفة عكسية', cue:'اختر عزلًا للكتف الخلفي بحركة فتح الذراعين.', options:[
+    opt('reverse-pec-deck','جهاز','فراشة عكسية'), opt('rear-delt-machine','جهاز','عزل خلفي'), opt('rear-delt-cable-fly','كيبل','رفرفة بالكيبل'), opt('incline-rear-delt-raise','دمبل','بنش مائل') ]},
   biceps: { id:'biceps', label:'البايسبس', cue:'اختر تمرين بايسبس واحدًا.', options:[
     opt('biceps-curl','دمبل','كيرل تقليدي'), opt('hammer-curl','دمبل','قبضة محايدة'), opt('preacher-curl-machine','جهاز','ثبات أعلى الذراع'), opt('cable-biceps-curl','كيبل','شد مستمر'), opt('ezbar-curl','بار','قبضة مريحة'), opt('incline-dumbbell-curl','دمبل','تمدد أكبر'), opt('concentration-curl','دمبل','عزل يد واحدة') ]},
   triceps: { id:'triceps', label:'الترايسبس', cue:'اختر تمرين ترايسبس واحدًا.', options:[
-    opt('triceps-pushdown','كيبل','بار مستقيم'), opt('rope-triceps-pushdown','كيبل','حبل'), opt('overhead-cable-triceps','كيبل','فوق الرأس'), opt('triceps-dip-machine','جهاز','دفع للأسفل'), opt('assisted-dip','جهاز','ديبس بمساعدة'), opt('dumbbell-overhead-triceps','دمبل','فوق الرأس') ]},
+    opt('triceps-pushdown','كيبل','بار مستقيم'), opt('rope-triceps-pushdown','كيبل','حبل'), opt('single-arm-triceps-pushdown','كيبل','يد واحدة'), opt('vbar-triceps-pushdown','كيبل','مقبض V'), opt('reverse-grip-triceps-pushdown','كيبل','قبضة معكوسة') ]},
+  overheadTriceps: { id:'overheadTriceps', label:'الترايسبس — تمديد فوق الرأس', cue:'اختر نوع تمديد الترايسبس فوق الرأس.', options:[
+    opt('overhead-cable-triceps','كيبل','فوق الرأس بالكيبل'), opt('dumbbell-overhead-triceps','دمبل','فوق الرأس بالدمبل') ]},
+  dipTriceps: { id:'dipTriceps', label:'الترايسبس — حركة ديبس', cue:'اختر تمرين ديبس بنفس الحركة.', options:[
+    opt('triceps-dip-machine','جهاز','ديبس جهاز'), opt('assisted-dip','جهاز','ديبس بمساعدة') ]},
   kneeDominant: { id:'kneeDominant', label:'الأرجل — حركة أساسية', cue:'اختر تمرينًا واحدًا للفخذ الأمامي والمؤخرة.', options:[
     opt('leg-press','جهاز','المقترح الأساسي'), opt('hack-squat','جهاز','هاك سكوات'), opt('pendulum-squat','جهاز','بندول سكوات'), opt('v-squat','جهاز','V-Squat'), opt('smith-squat','سميث','سكوات ثابت المسار'), opt('goblet-squat','دمبل','بسيط وواضح'), opt('belt-squat','جهاز','حمل أقل على الظهر') ]},
   hamstrings: { id:'hamstrings', label:'الفخذ الخلفي — ثني الركبة', cue:'اختر تمرينًا واحدًا للفخذ الخلفي.', options:[
-    opt('leg-curl','جهاز','كيرل جالس'), opt('lying-leg-curl','جهاز','كيرل مستلقٍ'), opt('standing-leg-curl','جهاز','كيرل واقف'), opt('single-leg-curl','جهاز','رجل واحدة'), opt('cable-leg-curl','كيبل','رباط كاحل'), opt('nordic-assisted','وزن جسم','Nordic مساعد') ]},
+    opt('leg-curl','جهاز','كيرل جالس'), opt('lying-leg-curl','جهاز','كيرل مستلقٍ'), opt('standing-leg-curl','جهاز','كيرل واقف'), opt('single-leg-curl','جهاز','رجل واحدة'), opt('cable-leg-curl','كيبل','رباط كاحل') ]},
   unilateralLeg: { id:'unilateralLeg', label:'الأرجل — رجل واحدة', cue:'اختر تمرينًا أحادي الرجل للتوازن والقوة.', options:[
     opt('walking-lunge','وزن جسم','لانجز مشي'), opt('bulgarian-split-squat','بنش','بلغاريان'), opt('reverse-lunge','وزن جسم','لانجز خلفي'), opt('step-up','صندوق','Step-Up'), opt('smith-split-squat','سميث','Split Squat ثابت'), opt('stationary-split-squat','وزن جسم','Split Squat'), opt('single-leg-press','جهاز','Leg Press رجل واحدة') ]},
   calves: { id:'calves', label:'السمانة', cue:'اختر نوع رفع سمانة واحدًا.', options:[
     opt('calf-raise','واقف','رفع سمانة'), opt('seated-calf-raise','جهاز','جالس'), opt('legpress-calf-raise','جهاز','على Leg Press'), opt('smith-calf-raise','سميث','على السميث'), opt('standing-calf-machine','جهاز','جهاز واقف'), opt('single-leg-calf-raise','وزن جسم','رجل واحدة'), opt('donkey-calf-raise','جهاز','Donkey') ]},
   glutes: { id:'glutes', label:'المؤخرة — تمديد الورك', cue:'اختر Hip Thrust / Bridge واحدًا.', options:[
-    opt('hip-thrust','بنش','المقترح الأساسي'), opt('glute-drive-machine','جهاز','Glute Drive'), opt('smith-hip-thrust','سميث','Hip Thrust ثابت'), opt('barbell-hip-thrust','بار','النسخة الحرة'), opt('cable-pull-through','كيبل','تمديد ورك'), opt('glute-bridge-machine','جهاز','Glute Bridge') ]},
+    opt('hip-thrust','بنش','المقترح الأساسي'), opt('glute-drive-machine','جهاز','Glute Drive'), opt('smith-hip-thrust','سميث','Hip Thrust ثابت'), opt('barbell-hip-thrust','بار','النسخة الحرة'), opt('glute-bridge-machine','جهاز','Glute Bridge') ]},
+  hingeGlutes: { id:'hingeGlutes', label:'المؤخرة — تمرين شد الورك', cue:'هذا تمرين قائم مختلف عن Hip Thrust؛ اختره فقط إذا ناسب برنامجك.', options:[
+    opt('cable-pull-through','كيبل','مد الورك مع ثني الجذع') ]},
+  flexionCore: { id:'flexionCore', label:'البطن — الثني', cue:'اختر تمرين كرنش للبطن.', options:[
+    opt('machine-crunch','جهاز','كرنش جهاز'), opt('cable-crunch','كيبل','كرنش كيبل') ]},
+  sidePlank: { id:'sidePlank', label:'الجذع — ثبات جانبي', cue:'حافظ على تمرين الثبات الجانبي، ولا تستبدله بكرنش.', options:[
+    opt('side-plank','وزن الجسم','ثبات جانبي') ]},
   core: { id:'core', label:'الجذع', cue:'اختر تمرين جذع واحدًا بجودة حركة عالية.', options:[
-    opt('plank','وزن جسم','ثبات أمامي'), opt('side-plank','وزن جسم','ثبات جانبي'), opt('dead-bug','وزن جسم','تحكم بالحوض'), opt('bird-dog','وزن جسم','ثبات وتوازن'), opt('pallof-press','كيبل','مقاومة الدوران'), opt('machine-crunch','جهاز','كرنش جهاز'), opt('cable-crunch','كيبل','كرنش كيبل') ]},
+    opt('plank','وزن جسم','ثبات أمامي'), opt('dead-bug','وزن جسم','مقاومة تمدد الظهر'), opt('bird-dog','وزن جسم','ثبات الجذع') ]},
 };
+
+
+/**
+ * روابط يوتيوب محددة لكل تمرين تم التحقق من مطابقة عنوانه للحركة.
+ * إذا لم يوجد مقطع معتمد لا نكرر فيديو حركة أخرى؛ نظهر بحثًا بالاسم الدقيق.
+ */
+const VERIFIED_VARIANT_VIDEOS: Record<string, string> = {
+  'plate-loaded-chest-press': '0Wa9CfRXUkA',
+  'dumbbell-bench-press': 'v0NisWqmKJQ',
+  'cable-chest-press': 'FVWJglwid4I',
+  'incline-machine-press': '-7d6XCeQd0g',
+  'incline-smith-press': 'D_h6XI_YxhA',
+  'neutral-grip-pulldown': 'fR_Pw6PxLz4',
+  'arnold-press': 'ris9tKqMwgU',
+  'preacher-curl-machine': 'R-8Sa0_qiws',
+  'v-squat': 'h4eE6-Hs2hQ',
+  'hack-squat': 'VY8ko6ecfso',
+  'lying-leg-curl': '-6quHxbz-RM',
+  'glute-drive-machine': 'zlvRjuXyWQQ',
+  'smith-hip-thrust': 'ADgWjz9i42Y',
+  'barbell-hip-thrust': '0InBEUP0-aA',
+  'reverse-pec-deck': 'Z84HkxGCBqQ',
+  'cable-pull-through': '4oZ_0_bQcOg',
+};
+for (const [id, youtubeId] of Object.entries(VERIFIED_VARIANT_VIDEOS)) {
+  const machine = MACHINES[id];
+  if (!machine) throw new Error(`Missing exercise for verified video ${id}`);
+  machine.guideYoutubeId = youtubeId;
+  machine.guideYoutubeQuery = undefined;
+  machine.guideTitle = `شرح ${machine.ar} — ${machine.en}`;
+}
 
 const POOL_BY_MACHINE = new Map<string, ExercisePool>();
 Object.values(EXERCISE_POOLS).forEach((pool) => pool.options.forEach((o) => POOL_BY_MACHINE.set(o.id, pool)));

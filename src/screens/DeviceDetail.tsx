@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ALTERNATIVES, MACHINES, type MachineId } from '../data/machines';
-import { DAY_BY_ID, cardioStationsForDay, machineUsage } from '../data/program';
-import { PageHeader, Sheet } from '../components/ui';
-import { Icon } from '../components/Icon';
+import { DAY_BY_ID, SESSION_STRUCTURE, machineUsage } from '../data/program';
+import { PageHeader } from '../components/ui';
 import { Illustration } from '../components/Illustration';
 import { setsRepsLabel } from '../lib/plan';
+import { ExerciseVideoGuide } from '../components/ExerciseVideoGuide';
+import { Icon } from '../components/Icon';
 
 export default function DeviceDetail() {
   const { id } = useParams();
+  const [guide, setGuide] = useState(false);
   const nav = useNavigate();
   const m = MACHINES[id as MachineId];
-  const [guideOpen, setGuideOpen] = useState(false);
   if (!m) return <Navigate to="/devices" replace />;
   const usage = machineUsage(m.id);
   const alts = ALTERNATIVES[m.id] ?? [];
@@ -38,13 +39,13 @@ export default function DeviceDetail() {
             <b>تنبيه:</b> {m.warn}
           </div>
         )}
-        {m.guideYoutubeId && (
-          <button type="button" className="btn btn-ghost btn-block exercise-guide-btn" onClick={() => setGuideOpen(true)} style={{ marginTop: 12 }}>
-            <Icon name="play" /> شاهد شرح التمرين داخل 45/4
-          </button>
-        )}
       </section>
 
+      {(m.guideYoutubeId || m.guideYoutubeQuery) && (
+        <button type="button" className="btn btn-primary btn-block" onClick={() => setGuide(true)}>
+          <Icon name="play" /> {m.guideYoutubeId ? 'عرض فيديو التمرين وشرحه' : 'عرض شرح التمرين والبحث عن فيديو'}
+        </button>
+      )}
       <section className="card">
         <div className="card-title" style={{ marginBottom: 10 }}>أين يظهر في برنامجك؟</div>
         {usage.length === 0 ? (
@@ -58,7 +59,7 @@ export default function DeviceDetail() {
                 <div key={dayId} className="swap-row">
                   <b>اليوم {dayId} — {day.focus}</b>
                   <span className="muted">
-                    {cardioStationsForDay(dayId).includes(m.id) ? `كارديو · ${day.cardio.note}` : ex ? `${setsRepsLabel(ex)} · راحة ${ex.rest} ث` : ''}
+                    {day.cardio.machineId === m.id ? `كارديو ${SESSION_STRUCTURE.cardio} دقيقة (${day.cardio.mode === 'intervals' ? 'فترات' : 'ثابت'})` : ex ? `${setsRepsLabel(ex)} · راحة ${ex.rest} ث` : ''}
                   </span>
                 </div>
               );
@@ -78,20 +79,7 @@ export default function DeviceDetail() {
           ))}
         </section>
       )}
-
-      {m.guideYoutubeId && (
-        <Sheet open={guideOpen} onClose={() => setGuideOpen(false)} title={m.guideTitle ?? `طريقة أداء ${m.ar}`}>
-          <div className="exercise-guide-frame">
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${m.guideYoutubeId}?playsinline=1&rel=0${m.guideYoutubeStartSeconds ? `&start=${m.guideYoutubeStartSeconds}` : ''}`}
-              title={m.guideTitle ?? `طريقة أداء ${m.ar}`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
-          <p className="muted" style={{ fontSize: 13.5, marginTop: 10 }}>روابط الشرح المختارة للتمارين الموجودة في جدولك يقدمها مدرب رجل، وتفتح داخل 45/4.</p>
-        </Sheet>
-      )}
+      <ExerciseVideoGuide machine={guide ? m : null} onClose={() => setGuide(false)} />
     </div>
   );
 }

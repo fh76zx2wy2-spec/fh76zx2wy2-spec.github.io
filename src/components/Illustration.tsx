@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { ILLUSTRATIONS } from '../data/illustrations.generated';
+import { buildFallbackIllustration } from './illustrationFallback';
 
 /**
  * رسم الجهاز (SVG متجهي مستخرج من PDF). الألوان عبر متغيرات CSS فتتبدّل مع الوضع الداكن.
@@ -39,7 +40,7 @@ export const Illustration = memo(function Illustration({
     return () => io.disconnect();
   }, [lazy, visible]);
 
-  const ill = ILLUSTRATIONS[id];
+  const ill = ILLUSTRATIONS[id] ?? buildFallbackIllustration(id);
   return (
     <div ref={ref} className={`ill ${className}`} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       {visible && ill ? (

@@ -23,6 +23,7 @@ import type { Difficulty, LiveSession, LiveStage, Session } from '../lib/types';
 import { Clock, CheckMark, Sheet, Stepper } from '../components/ui';
 import { Icon } from '../components/Icon';
 import { Illustration } from '../components/Illustration';
+import { ExerciseVideoGuide } from '../components/ExerciseVideoGuide';
 import { Ring } from '../components/Ring';
 import { beep, vibrate } from '../lib/feedback';
 import { kgLabel, mmss, minutesLabel } from '../lib/format';
@@ -34,6 +35,9 @@ import { WEEKLY_GOAL } from '../data/program';
 export type Upd = (fn: (l: LiveSession) => LiveSession) => void;
 
 const illId = (machineId: string) => MACHINES[machineId as MachineId]?.illustration ?? machineId;
+
+
+const hasGuide = (m?: { guideYoutubeId?: string; guideYoutubeQuery?: string } | null) => Boolean(m?.guideYoutubeId || m?.guideYoutubeQuery);
 
 /* ============================ مرحلة جهاز حديد ============================ */
 
@@ -197,7 +201,7 @@ export function ExerciseStage({
               <b>تنبيه:</b> {m.warn}
             </div>
           )}
-          {m.guideYoutubeId && (
+          {hasGuide(m) && (
             <button type="button" className="btn btn-ghost btn-block exercise-guide-btn" onClick={() => setGuideMachineId(stage.machineId)} style={{ marginTop: 12 }}>
               <Icon name="play" /> طريقة استعمال الجهاز / أداء التمرين
             </button>
@@ -231,7 +235,7 @@ export function ExerciseStage({
                       <div className="exercise-option-meta">آخر وزن: <b>{last != null ? `${kgLabel(last)} كجم` : '—'}</b></div>
                     </div>
                     <div className="exercise-option-actions">
-                      {am.guideYoutubeId && <button className="icon-btn" aria-label={`شرح ${am.ar}`} onClick={() => setGuideMachineId(a.id)}><Icon name="play" size={17} /></button>}
+                      {hasGuide(am) && <button className="icon-btn" aria-label={`شرح ${am.ar}`} onClick={() => setGuideMachineId(a.id)}><Icon name="play" size={17} /></button>}
                       {a.id === stage.machineId
                         ? <button className="btn btn-sm btn-soft" disabled>الحالي ✓</button>
                         : <button className="btn btn-sm btn-primary" onClick={() => { setAltOpen(false); upd((l) => substituteStage(l, a.id)); }}>اختيار</button>}
@@ -245,19 +249,7 @@ export function ExerciseStage({
         )}
       </Sheet>
 
-      {guideMachine?.guideYoutubeId && (
-        <Sheet open={!!guideMachineId} onClose={() => setGuideMachineId(null)} title={guideMachine.guideTitle ?? `طريقة أداء ${guideMachine.ar}`}>
-          <div className="exercise-guide-frame">
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${guideMachine.guideYoutubeId}?playsinline=1&rel=0${guideMachine.guideYoutubeStartSeconds ? `&start=${guideMachine.guideYoutubeStartSeconds}` : ''}`}
-              title={guideMachine.guideTitle ?? `طريقة أداء ${guideMachine.ar}`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
-          <div className="muted" style={{ fontSize: 13.5, marginTop: 10 }}>شاهد الحركة داخل 45/4 ثم أغلق الشرح. لن تفقد تقدمك في الجلسة.</div>
-        </Sheet>
-      )}
+      <ExerciseVideoGuide machine={guideMachine ?? null} onClose={() => setGuideMachineId(null)} />
     </div>
   );
 }
