@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DAYS, SAFETY_NOTE, SESSION_STRUCTURE, WEEKLY_GOAL, type DayId } from '../data/program';
-import { MACHINES } from '../data/machines';
+import { MACHINES, exercisePoolFor } from '../data/machines';
 import { useDerived } from '../lib/derived';
 import { useStartActions } from '../lib/actions';
 import { resolvePlan, setsRepsLabel } from '../lib/plan';
@@ -142,15 +142,20 @@ export default function Workout() {
                   </div>
                 </div>
               )}
-              {plan.exercises.map((e) => (
-                <div className="plan-row" key={e.machineId}>
-                  <Illustration id={MACHINES[e.machineId].illustration} className="sm plan-ill" />
-                  <div className="grow">
-                    <div className="t">{MACHINES[e.machineId].ar}</div>
-                    <div className="s">{plan.circuit ? `${plan.circuit.rounds} جولات × ${e.reps}` : setsRepsLabel(e)} · راحة {e.rest} ث</div>
+              {plan.exercises.map((e) => {
+                const pool = exercisePoolFor(e.machineId);
+                return (
+                  <div className="plan-row plan-choice-row" key={e.machineId}>
+                    <Illustration id={MACHINES[e.machineId].illustration} className="sm plan-ill" />
+                    <div className="grow">
+                      <div className="t">{pool?.label ?? MACHINES[e.machineId].ar}</div>
+                      <div className="s">{pool ? `اختر 1 من ${pool.options.length} · المقترح: ${MACHINES[e.machineId].ar}` : MACHINES[e.machineId].ar}</div>
+                      <div className="s">{plan.circuit ? `${plan.circuit.rounds} جولات × ${e.reps}` : setsRepsLabel(e)} · راحة {e.rest} ث</div>
+                    </div>
+                    {pool && <span className="tag tag-cold">{pool.options.length} بدائل</span>}
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {plan.day.ironHint && (
                 <div className="note-box cold" style={{ margin: '4px 0 8px' }}>
                   <b>ملاحظة الحديد:</b> {plan.day.ironHint}

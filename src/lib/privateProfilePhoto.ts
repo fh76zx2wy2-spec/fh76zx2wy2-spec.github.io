@@ -4,23 +4,27 @@ import { supabase } from './supabase';
 import { useAuth } from './auth';
 
 const BUCKET = 'coach-profiles';
-const PHOTO_PATH = ACTIVE_PROGRAM.key === 'abdulsalam'
-  ? 'abdulsalam/profile.png'
-  : 'ziyad/profile.png';
+function profilePath() {
+  return ACTIVE_PROGRAM.key === 'abdulsalam' ? 'abdulsalam/profile.png' : 'ziyad/profile.png';
+}
 
 export function usePrivateProfilePhoto(): string | null {
   const { user } = useAuth();
-  const [url, setUrl] = useState<string | null>(null);
+  const [url, setUrl] = useState<string | null>(() => ACTIVE_PROGRAM.key === 'dhaidan' ? '/coaches/dhaidan.jpg' : null);
 
   useEffect(() => {
     let alive = true;
+    if (ACTIVE_PROGRAM.key === 'dhaidan') {
+      setUrl('/coaches/dhaidan.jpg');
+      return () => { alive = false; };
+    }
     setUrl(null);
     if (!supabase || !user) return () => { alive = false; };
 
     (async () => {
       const { data, error } = await supabase.storage
         .from(BUCKET)
-        .createSignedUrl(PHOTO_PATH, 60 * 60);
+        .createSignedUrl(profilePath(), 60 * 60);
       if (!alive) return;
       if (error || !data?.signedUrl) {
         setUrl(null);

@@ -21,7 +21,7 @@ export function EntryGate({ onEnter }: { onEnter: () => void }) {
         <div className="entry-coach">الكوتش <span>/</span> {name}</div>
         <blockquote>«{quote}»</blockquote>
         <button type="button" className="btn btn-primary btn-lg entry-button" onClick={onEnter}>دخول</button>
-        <small>4 أيام · {ACTIVE_PROGRAM.key === 'ziyad' ? '45' : '60'} دقيقة</small>
+        <small>4 أيام · 45 دقيقة</small>
       </div>
     </main>
   );

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Footer, Logo } from '../components/ui';
 import { Icon, type IconName } from '../components/Icon';
+import { ACTIVE_PROGRAM } from '../data/program';
 
 const ITEMS: { to: string; icon: IconName; title: string; sub: string; cold?: boolean }[] = [
   { to: '/devices', icon: 'search', title: 'دليل الأجهزة', sub: 'كل جهاز بصورته وعضلاته وطريقة استخدامه' },
@@ -18,6 +19,13 @@ export default function More() {
         <Logo size={30} />
       </div>
       <div className="card pad-0">
+        {ACTIVE_PROGRAM.key === 'ziyad' && (
+          <Link to="/admin" className="list-row admin-more-link">
+            <span className="ic cold"><Icon name="gear" /></span>
+            <div className="grow"><div className="t">إدارة 45/4</div><div className="s">تعديل زيارات الأعضاء · إضافة وحذف · سجل التعديلات</div></div>
+            <span className="tag tag-hot">أدمن</span><Icon name="chevL" className="chev" />
+          </Link>
+        )}
         {ITEMS.map((it) => (
           <Link key={it.to} to={it.to} className="list-row">
             <span className={`ic ${it.cold ? 'cold' : ''}`}><Icon name={it.icon} /></span>

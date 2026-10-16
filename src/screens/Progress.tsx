@@ -117,11 +117,11 @@ export default function Progress() {
         </div>
       </section>
 
-      {buddy.me && buddy.buddy && (
+      {buddy.me && buddy.stats.length > 0 && (
         <section className="card">
-          <div className="row-between" style={{ marginBottom: 10 }}><div><div className="eyebrow">هذا الأسبوع</div><div className="card-title">أنا و{buddy.buddy.display_name}</div></div><span className="tag">ملخص أسبوعي</span></div>
-          <div className="buddy-period-grid">
-            {[buddy.me, buddy.buddy].map((b) => <div className="buddy-period-person" key={b.user_id}><span>{b.user_id === buddy.me?.user_id ? 'أنت' : b.display_name}</span><b className="num">{b.weekly_visits}</b><small>زيارة · {durationLabel(b.weekly_visit_seconds)} · {b.weekly_sessions}/4</small></div>)}
+          <div className="row-between" style={{ marginBottom: 10 }}><div><div className="eyebrow">هذا الأسبوع</div><div className="card-title">فريق 45/4</div></div><span className="tag">ملخص أسبوعي</span></div>
+          <div className="buddy-period-grid team-three-grid">
+            {buddy.stats.map((b) => <div className="buddy-period-person" key={b.user_id}><span>{b.user_id === buddy.me?.user_id ? 'أنت' : b.display_name}</span><b className="num">{b.weekly_visits}</b><small>زيارة · {durationLabel(b.weekly_visit_seconds)} · {b.weekly_sessions}/4</small></div>)}
           </div>
         </section>
       )}

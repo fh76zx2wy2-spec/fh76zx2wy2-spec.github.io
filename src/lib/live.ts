@@ -89,7 +89,8 @@ export function startLiveFromPlan(
             rounds,
             roundRest: i === plan.exercises.length - 1 ? roundRest : undefined,
             optional: optionalFrom != null && r >= optionalFrom,
-            weight: lw[e.machineId] ?? null,
+            weight: null,
+            lastWeight: lw[e.machineId] ?? null,
           }),
         );
       });
@@ -107,7 +108,8 @@ export function startLiveFromPlan(
           reps: e.reps,
           rest: e.rest,
           timed: e.timed,
-          weight: lw[e.machineId] ?? null,
+          weight: null,
+          lastWeight: lw[e.machineId] ?? null,
         }),
       );
     });
@@ -141,6 +143,7 @@ export function startLiveFromPlan(
     rest: null,
     clock: { startedAt: null, acc: 0 },
     early: false,
+    weightMemory: { ...lw },
   };
 }
 
@@ -338,7 +341,13 @@ export function alternativesFor(stage: LiveStage): { id: MachineId; note: string
 
 export function substituteStage(live: LiveSession, machineId: string): LiveSession {
   const stages = live.stages.map((s, i) =>
-    i === live.cur ? { ...s, machineId, substitutedFor: s.substitutedFor ?? s.machineId } : s,
+    i === live.cur ? {
+      ...s,
+      machineId,
+      substitutedFor: s.substitutedFor ?? s.machineId,
+      weight: null,
+      lastWeight: live.weightMemory?.[machineId] ?? null,
+    } : s,
   );
   return { ...live, stages };
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { DAY_BY_ID, EXTRA_BY_ID, WEIGHT_HINT } from '../data/program';
-import { MACHINES, type MachineId } from '../data/machines';
+import { MACHINES, exercisePoolFor, type MachineId } from '../data/machines';
+import { stretchesForDay, type StretchGuide } from '../data/stretches';
 import {
   acceptInterstitial,
   alternativesFor,
@@ -54,11 +55,14 @@ export function ExerciseStage({
   const m = MACHINES[stage.machineId as MachineId];
   const name = machineName(stage.machineId);
   const [altOpen, setAltOpen] = useState(false);
-  const [guideOpen, setGuideOpen] = useState(false);
-  const alts = alternativesFor(stage);
+  const [guideMachineId, setGuideMachineId] = useState<string | null>(null);
+  const pool = exercisePoolFor(stage.substitutedFor ?? stage.machineId);
+  const alts = pool
+    ? pool.options.map((o) => ({ id: o.id, note: `${o.tag} · ${o.note}` }))
+    : alternativesFor(stage);
   const postpone = canPostpone(live);
-  // 45/4 لا يطلب تسجيل أوزان الحديد؛ التركيز على إنجاز الجلسة فقط.
-  const hasWeight = false;
+  const hasWeight = true;
+  const guideMachine = guideMachineId ? MACHINES[guideMachineId] : null;
   const origName = stage.substitutedFor ? machineName(stage.substitutedFor).ar : null;
   const done = stage.status !== 'pending';
 
@@ -127,8 +131,16 @@ export function ExerciseStage({
           })}
         </div>
         {hasWeight && (
-          <div style={{ marginTop: 18 }}>
-            <div className="label" style={{ marginBottom: 8 }}>الوزن (اختياري)</div>
+          <div className="weight-memory" style={{ marginTop: 18 }}>
+            <div className="row-between weight-memory-head">
+              <div>
+                <div className="label">وزن اليوم <span className="muted">(اختياري)</span></div>
+                <div className="weight-last">آخر مرة: <b>{stage.lastWeight != null ? `${kgLabel(stage.lastWeight)} كجم` : 'لا يوجد وزن محفوظ'}</b></div>
+              </div>
+              {stage.lastWeight != null && stage.weight == null && (
+                <button className="btn btn-sm btn-soft-cold" onClick={() => upd((l) => setWeight(l, stage.lastWeight ?? null))}>استخدم السابق</button>
+              )}
+            </div>
             <Stepper
               value={stage.weight ?? 0}
               step={2.5}
@@ -165,7 +177,7 @@ export function ExerciseStage({
             <Icon name="swap" /> أؤدي هذا التمرين لاحقًا
           </button>
           <button className="btn btn-ghost btn-block" onClick={() => setAltOpen(true)}>
-            لا أستطيع استخدام هذا الجهاز
+            <Icon name="grid" /> {pool ? `اختر / غيّر التمرين · ${pool.options.length} خيارات` : 'اختيار بديل'}
           </button>
         </div>
       )}
@@ -186,51 +198,64 @@ export function ExerciseStage({
             </div>
           )}
           {m.guideYoutubeId && (
-            <button type="button" className="btn btn-ghost btn-block exercise-guide-btn" onClick={() => setGuideOpen(true)} style={{ marginTop: 12 }}>
+            <button type="button" className="btn btn-ghost btn-block exercise-guide-btn" onClick={() => setGuideMachineId(stage.machineId)} style={{ marginTop: 12 }}>
               <Icon name="play" /> طريقة استعمال الجهاز / أداء التمرين
             </button>
           )}
         </section>
       )}
 
-      <Sheet open={altOpen} onClose={() => setAltOpen(false)} title="بديل ضمن خطتك">
+      <Sheet open={altOpen} onClose={() => setAltOpen(false)} title={pool ? pool.label : 'بديل ضمن خطتك'}>
         {alts.length === 0 ? (
           <>
-            <p className="muted">لا يوجد بديل مُعتمد لهذا الجهاز في خطتك. يمكنك تركه لوقت لاحق والعودة إليه قبل إنهاء الجلسة.</p>
+            <p className="muted">لا يوجد بديل مُعتمد لهذا الجهاز. يمكنك تركه لوقت لاحق والعودة إليه قبل إنهاء الجلسة.</p>
             <button className="btn btn-dark btn-block" onClick={() => { setAltOpen(false); upd((l) => postponeCurrent(l, Date.now())); }}>أؤديه لاحقًا</button>
           </>
         ) : (
           <>
-            <p className="muted" style={{ fontSize: 14 }}>هذه بدائل من خطتك نفسها:</p>
-            {alts.map((a) => (
-              <button
-                key={a.id}
-                className="pick-row"
-                onClick={() => { setAltOpen(false); upd((l) => substituteStage(l, a.id)); }}
-              >
-                <Illustration id={MACHINES[a.id].illustration} className="sm pick-ill" />
-                <div className="grow">
-                  <div className="t">{MACHINES[a.id].ar}</div>
-                  <div className="s">{a.note}</div>
-                </div>
-              </button>
-            ))}
+            <div className="exercise-pool-intro">
+              <b>{pool?.cue ?? 'اختر البديل المتاح لك الآن.'}</b>
+              <span>{pool ? `اختر 1 من ${pool.options.length} خيارات · البرنامج يحافظ على نفس نمط الحركة` : 'بدائل معتمدة'}</span>
+            </div>
+            <div className="exercise-option-list">
+              {alts.map((a) => {
+                const am = MACHINES[a.id];
+                if (!am) return null;
+                const last = live.weightMemory?.[a.id];
+                return (
+                  <div className="exercise-option-card" key={a.id}>
+                    <Illustration id={am.illustration} className="sm pick-ill" />
+                    <div className="grow">
+                      <div className="t">{am.ar}</div>
+                      <div className="s">{a.note}</div>
+                      <div className="exercise-option-meta">آخر وزن: <b>{last != null ? `${kgLabel(last)} كجم` : '—'}</b></div>
+                    </div>
+                    <div className="exercise-option-actions">
+                      {am.guideYoutubeId && <button className="icon-btn" aria-label={`شرح ${am.ar}`} onClick={() => setGuideMachineId(a.id)}><Icon name="play" size={17} /></button>}
+                      {a.id === stage.machineId
+                        ? <button className="btn btn-sm btn-soft" disabled>الحالي ✓</button>
+                        : <button className="btn btn-sm btn-primary" onClick={() => { setAltOpen(false); upd((l) => substituteStage(l, a.id)); }}>اختيار</button>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
             <button className="link-btn" onClick={() => { setAltOpen(false); upd((l) => postponeCurrent(l, Date.now())); }}>أو أؤديه لاحقًا</button>
           </>
         )}
       </Sheet>
 
-      {m?.guideYoutubeId && (
-        <Sheet open={guideOpen} onClose={() => setGuideOpen(false)} title={m.guideTitle ?? `طريقة أداء ${m.ar}`}>
+      {guideMachine?.guideYoutubeId && (
+        <Sheet open={!!guideMachineId} onClose={() => setGuideMachineId(null)} title={guideMachine.guideTitle ?? `طريقة أداء ${guideMachine.ar}`}>
           <div className="exercise-guide-frame">
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${m.guideYoutubeId}?playsinline=1&rel=0${m.guideYoutubeStartSeconds ? `&start=${m.guideYoutubeStartSeconds}` : ''}`}
-              title={m.guideTitle ?? `طريقة أداء ${m.ar}`}
+              src={`https://www.youtube-nocookie.com/embed/${guideMachine.guideYoutubeId}?playsinline=1&rel=0${guideMachine.guideYoutubeStartSeconds ? `&start=${guideMachine.guideYoutubeStartSeconds}` : ''}`}
+              title={guideMachine.guideTitle ?? `طريقة أداء ${guideMachine.ar}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
           </div>
-          <p className="muted" style={{ fontSize: 13.5, marginTop: 10 }}>شاهد الحركة داخل 45/4 ثم أغلق الشرح وأكمل تمرينك من نفس النقطة.</p>
+          <div className="muted" style={{ fontSize: 13.5, marginTop: 10 }}>شاهد الحركة داخل 45/4 ثم أغلق الشرح. لن تفقد تقدمك في الجلسة.</div>
         </Sheet>
       )}
     </div>
@@ -268,6 +293,8 @@ export function TimedStage({ live, stage, now, title, hint }: { live: LiveSessio
         : mixedCardio
           ? { ar: 'كارديو متنوع', en: 'Mixed Cardio' }
           : machineName(stage.machineId);
+  const stretchGuides = stage.kind === 'stretch' ? stretchesForDay(live.day) : [];
+  const [stretchGuide, setStretchGuide] = useState<StretchGuide | null>(null);
 
   return (
     <div className="stack live-stage">
@@ -319,6 +346,47 @@ export function TimedStage({ live, stage, now, title, hint }: { live: LiveSessio
             </div>
           )}
         </section>
+      )}
+
+      {stretchGuides.length > 0 && (
+        <section className="card stretch-library-card">
+          <div className="row-between" style={{ marginBottom: 10 }}>
+            <div>
+              <div className="eyebrow">شرح الإطالات</div>
+              <div className="card-title">4 إطالات واضحة · اضغط أي واحدة</div>
+            </div>
+            <span className="tag tag-cold">فيديو داخل 45/4</span>
+          </div>
+          <div className="stretch-guide-grid">
+            {stretchGuides.map((g, i) => (
+              <button type="button" className="stretch-guide-card" key={g.id} onClick={() => setStretchGuide(g)}>
+                <span className="stretch-guide-num num">{i + 1}</span>
+                <span className="stretch-guide-copy"><b>{g.ar}</b><small>{g.target} · {g.hold}</small></span>
+                <Icon name="play" size={18} />
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {stretchGuide && (
+        <Sheet open={!!stretchGuide} onClose={() => setStretchGuide(null)} title={stretchGuide.ar}>
+          <div className="stretch-detail-head"><b>{stretchGuide.en}</b><span>{stretchGuide.hold}</span></div>
+          <div className="muted" style={{ marginBottom: 10 }}>يستهدف: {stretchGuide.target}</div>
+          <ol className="steps">
+            {stretchGuide.steps.map((step, i) => <li key={i}><span className="n num">{i + 1}</span><span>{step}</span></li>)}
+          </ol>
+          <div className="note-box hot" style={{ marginTop: 12 }}><b>تنبيه:</b> {stretchGuide.warning}</div>
+          <div className="exercise-guide-frame" style={{ marginTop: 14 }}>
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${stretchGuide.youtubeId}?playsinline=1&rel=0`}
+              title={stretchGuide.videoTitle}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+          <p className="muted" style={{ fontSize: 13.5, marginTop: 10 }}>الفيديو من مدرب/مدربين رجال، ويُعرض داخل الموقع حتى لا تضطر للبحث كل مرة.</p>
+        </Sheet>
       )}
 
     </div>

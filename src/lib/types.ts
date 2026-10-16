@@ -163,7 +163,10 @@ export interface LiveStage {
   setsDone: number;
   status: 'pending' | 'done' | 'skipped';
   deferred: boolean;
+  /** وزن هذه الجلسة — اختياري. */
   weight: number | null;
+  /** آخر وزن محفوظ لنفس التمرين قبل هذه الجلسة. */
+  lastWeight?: number | null;
   substitutedFor: string | null;
   /** للتمرين الدائري */
   round?: number;
@@ -209,4 +212,6 @@ export interface LiveSession {
   /** ساعة المرحلة (كارديو/إطالة/جلسة إضافية) */
   clock: Clock;
   early: boolean;
+  /** ذاكرة أوزان آخر جلسة لكل تمرين، تُستخدم عند تبديل الجهاز أثناء الجلسة. */
+  weightMemory?: Record<string, number>;
 }

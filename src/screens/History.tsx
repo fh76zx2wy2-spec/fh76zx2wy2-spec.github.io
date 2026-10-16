@@ -136,20 +136,20 @@ export default function History() {
 
       <section className="card history-compare-card">
         <div className="row-between">
-          <div><div className="eyebrow">أنا ورفيق التمرين</div><div className="card-title">كم رحنا للنادي؟</div></div>
+          <div><div className="eyebrow">فريق 45/4</div><div className="card-title">كم رحنا للنادي؟</div></div>
           <Link to="/calendar" className="btn btn-sm btn-soft"><Icon name="calendar" size={16} /> التقويم</Link>
         </div>
         <div className="seg" role="group" aria-label="الفترة" style={{ marginTop: 12 }}>
           {(['week','month','all'] as Period[]).map((p) => <button key={p} className={period === p ? 'on' : ''} onClick={() => setPeriod(p)}>{periodLabel(p)}</button>)}
         </div>
-        {buddy.loading ? <div className="muted" style={{ marginTop: 14 }}>جاري تحميل الحضور…</div> : buddy.me && buddy.buddy ? (
-          <div className="buddy-period-grid">
-            {[buddy.me, buddy.buddy].map((b) => {
+        {buddy.loading ? <div className="muted" style={{ marginTop: 14 }}>جاري تحميل الحضور…</div> : buddy.me && buddy.stats.length ? (
+          <div className="buddy-period-grid team-three-grid">
+            {buddy.stats.map((b) => {
               const st = statForPeriod(b, period);
               return <div className="buddy-period-person" key={b.user_id}><span>{b.user_id === buddy.me?.user_id ? 'أنت' : b.display_name}</span><b className="num">{st.visits}</b><small>زيارة · {durationLabel(st.seconds)}</small></div>;
             })}
           </div>
-        ) : <div className="muted" style={{ marginTop: 14 }}>شغّل تحديث Supabase الجديد لإظهار المقارنة الممتدة.</div>}
+        ) : <div className="muted" style={{ marginTop: 14 }}>شغّل تحديث Supabase الجديد لإظهار مقارنة الفريق.</div>}
       </section>
 
       <section className="card">
@@ -157,21 +157,19 @@ export default function History() {
         {attendanceError ? <div className="note-box hot">السجل المشترك يحتاج تشغيل ملف SQL الجديد مرة واحدة.</div> : (
           <div className="week-history-list">
             {weeks.map((w, idx) => {
-              const meEmail = buddy.me?.email ?? '';
-              const mateEmail = buddy.buddy?.email ?? '';
-              const meRows = meEmail ? weekRows(w, meEmail) : [];
-              const mateRows = mateEmail ? weekRows(w, mateEmail) : [];
-              const meVisits = meRows.reduce((n, r) => n + r.visit_count, 0);
-              const mateVisits = mateRows.reduce((n, r) => n + r.visit_count, 0);
-              const meDays = meRows.length;
-              const mateDays = mateRows.length;
+              const memberRows = buddy.stats.map((member) => {
+                const rows = weekRows(w, member.email);
+                return { member, rows, visits: rows.reduce((n, r) => n + r.visit_count, 0), days: rows.length };
+              });
               const shownStart = effectiveWeekStart(w);
               const isFirstPartialWeek = shownStart !== w;
+              const hasComplete = memberRows.some((x) => x.days >= WEEKLY_GOAL);
               return (
-                <div className={`week-history-row ${idx === 0 ? 'current' : ''}`} key={w}>
-                  <div className="week-history-date"><b>{idx === 0 ? 'هذا الأسبوع' : `${formatGreg(shownStart, { year: false })} – ${formatGreg(addDaysISO(w, 6), { year: false })}`}</b><small>{isFirstPartialWeek ? 'بداية المتابعة' : (meDays >= WEEKLY_GOAL || mateDays >= WEEKLY_GOAL ? '🏆' : '')}</small></div>
-                  <div className="week-history-score"><span>أنت</span><b className="num">{meVisits}</b><small>{Math.min(4, meDays)}/4 أيام</small></div>
-                  <div className="week-history-score"><span>{buddy.buddy?.display_name ?? 'عبدالسلام'}</span><b className="num">{mateVisits}</b><small>{Math.min(4, mateDays)}/4 أيام</small></div>
+                <div className={`week-history-row team-week-history-row ${idx === 0 ? 'current' : ''}`} key={w}>
+                  <div className="week-history-date"><b>{idx === 0 ? 'هذا الأسبوع' : `${formatGreg(shownStart, { year: false })} – ${formatGreg(addDaysISO(w, 6), { year: false })}`}</b><small>{isFirstPartialWeek ? 'بداية المتابعة' : (hasComplete ? '🏆' : '')}</small></div>
+                  {memberRows.map(({ member, visits, days }) => (
+                    <div className="week-history-score" key={member.email}><span>{member.user_id === buddy.me?.user_id ? 'أنت' : member.display_name}</span><b className="num">{visits}</b><small>{Math.min(4, days)}/4 أيام</small></div>
+                  ))}
                 </div>
               );
             })}

@@ -1,5 +1,5 @@
 /**
- * 45/4 — برنامج موحّد لزياد وعبدالسلام.
+ * 45/4 — برنامج موحّد لزياد وعبدالسلام وضيدان.
  * السبت Upper A · الأحد Lower A · الثلاثاء Upper B · الأربعاء Lower B.
  * الجلسة الأساسية: 7 دقائق إحماء + 22 حديد + 11 كارديو + 5 إطالة = 45 دقيقة.
  */
@@ -19,7 +19,7 @@ export interface SessionStructure {
 export let SESSION_STRUCTURE: SessionStructure = { warmup: 7, cardio: 11, iron: 22, stretch: 5, total: 45 };
 
 export interface ActiveProgramMeta {
-  key: 'ziyad' | 'abdulsalam';
+  key: 'ziyad' | 'abdulsalam' | 'dhaidan';
   defaultName: string;
   email: string;
   weightsFirst: boolean;
@@ -348,14 +348,15 @@ function mapDays(days: DayDef[]): Record<DayId, DayDef> {
   return Object.fromEntries(days.map((d) => [d.id, d])) as Record<DayId, DayDef>;
 }
 
-/** نفس البرنامج لكلا الحسابين؛ الاختلاف الوحيد هو الاسم/الحساب. */
+/** نفس برنامج زياد يُطبّق على عبدالسلام وضيدان؛ الاختلاف هو الهوية فقط. */
 export function setProgramForEmail(email: string | null | undefined) {
   const e = (email ?? '').trim().toLowerCase();
   const abdul = e === 'amk157662@gmail.com';
+  const dhaidan = e === 'aboomar335@gmail.com';
   ACTIVE_PROGRAM = {
-    key: abdul ? 'abdulsalam' : 'ziyad',
-    defaultName: abdul ? 'عبدالسلام' : 'زياد',
-    email: abdul ? 'amk157662@gmail.com' : 'z062496@gmail.com',
+    key: dhaidan ? 'dhaidan' : abdul ? 'abdulsalam' : 'ziyad',
+    defaultName: dhaidan ? 'ضيدان' : abdul ? 'عبدالسلام' : 'زياد',
+    email: dhaidan ? 'aboomar335@gmail.com' : abdul ? 'amk157662@gmail.com' : 'z062496@gmail.com',
     weightsFirst: true,
     cardioEmbeddedWarmup: false,
   };

@@ -25,6 +25,7 @@ const History = lazy(() => import('./screens/History'));
 const SessionDetail = lazy(() => import('./screens/SessionDetail'));
 const Settings = lazy(() => import('./screens/Settings'));
 const ProgramEditor = lazy(() => import('./screens/ProgramEditor'));
+const Admin = lazy(() => import('./screens/Admin'));
 
 function Splash() {
   return (
@@ -117,6 +118,7 @@ if (enteredFor !== userId) {
         <Route path="history/:id" element={<SessionDetail />} />
         <Route path="settings" element={<Settings />} />
         <Route path="settings/program" element={<ProgramEditor />} />
+        <Route path="admin" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -14,7 +14,8 @@ import { Icon } from '../components/Icon';
 import { Illustration } from '../components/Illustration';
 import { DayPickerSheet, ExtraSheet, ShortSheet, dayIllustrations } from '../components/pickers';
 import { durationLabel, timeLabel } from '../lib/format';
-import { BUDDY_REACTION_LABEL, useBuddy, type BuddyReactionKind } from '../lib/buddy';
+import { BUDDY_REACTION_LABEL, useBuddy, type BuddyReactionKind, type BuddyStat } from '../lib/buddy';
+import { MemberSummarySheet } from '../components/MemberSummarySheet';
 import { buildAchievements } from '../lib/achievements';
 import { coachName, dayIcon } from '../lib/profile';
 import { usePrivateProfilePhoto } from '../lib/privateProfilePhoto';
@@ -63,10 +64,12 @@ export default function Home() {
   const activeVisit = db?.visits.find((v) => !v.left_at) ?? null;
   const nowMs = useNow(15_000, !!activeVisit);
   const activeVisitSeconds = activeVisit ? Math.max(0, Math.floor((nowMs - Date.parse(activeVisit.arrived_at)) / 1000)) : 0;
+  const exitReady = activeVisitSeconds >= 45 * 60;
   const todayVisits = (db?.visits ?? []).filter((v) => v.date === today);
   const lastEndedToday = todayVisits.find((v) => !!v.left_at) ?? null;
   const buddyMe = buddy.me;
-  const buddyMate = buddy.buddy;
+  const teamStats = buddy.stats;
+  const [memberOpen, setMemberOpen] = useState<BuddyStat | null>(null);
   const coachPhoto = usePrivateProfilePhoto();
   const [pushState, setPushState] = useState<PushState>('prompt');
   const achievements = buildAchievements(db?.sessions ?? [], db?.visits ?? [], buddyMe?.streak_4of4 ?? stats.streak.current, stats.weeksComplete);
@@ -258,9 +261,9 @@ export default function Home() {
         <div className="coach-top row-between">
           <Logo size={40} />
           <div className="row home-head-actions">
-            {activeVisit && (
+            {activeVisit && !exitReady && (
               <button type="button" className="gym-exit-chip" onClick={leaveGym}>
-                خرجت من النادي
+                خروج مبكر
               </button>
             )}
             <span className={`tag coach-sync ${offline ? 'warn' : ''}`} title="حالة المزامنة">
@@ -304,6 +307,15 @@ export default function Home() {
             <div className="gym-checkin-meta">
               وصلت {timeLabel(activeVisit.arrived_at)} · يمكنك إغلاق الموقع، فالمدة تُحسب من وقت الوصول المحفوظ.
             </div>
+            {exitReady ? (
+              <button type="button" className="gym-leave-hero" onClick={leaveGym}>
+                <span className="gym-leave-icon"><Icon name="check" size={25} strokeWidth={3} /></span>
+                <span><b>خرجت من النادي</b><small>أكملت 45 دقيقة · سجّل المغادرة الآن</small></span>
+                <Icon name="chevL" size={22} />
+              </button>
+            ) : (
+              <div className="gym-exit-wait"><Icon name="clock" size={16} /> يصبح زر الخروج كبيرًا وواضحًا بعد إكمال 45 دقيقة</div>
+            )}
             <button type="button" className="gym-undo-btn" onClick={undoArrival}>تراجع عن الوصول</button>
           </>
         ) : (
@@ -334,24 +346,28 @@ export default function Home() {
           <div><div className="eyebrow">الأسبوع الحالي</div><div className="card-title">{formatGreg(curWeekStart, { year: false })} – {formatGreg(addDaysISO(curWeekStart, 6), { year: false })}</div></div>
           <Link to="/history" className="link-btn">السجل</Link>
         </div>
-        {buddyMe && buddyMate ? (
-          <div className="buddy-period-grid home-week-grid">
-            {[buddyMe, buddyMate].map((b) => (
-              <div className={`buddy-period-person ${b.in_gym ? 'active' : ''}`} key={b.user_id}>
-                <span>{b.user_id === buddyMe.user_id ? 'أنت' : b.display_name}{b.in_gym ? ' · الآن في النادي 🔥' : ''}</span>
+        {buddyMe && teamStats.length ? (
+          <div className="buddy-period-grid home-week-grid team-three-grid">
+            {teamStats.map((b) => (
+              <button type="button" className={`buddy-period-person member-tap ${b.in_gym ? 'active' : ''}`} key={b.user_id} onClick={() => setMemberOpen(b)}>
+                <span className="member-card-head">
+                  {b.email === 'aboomar335@gmail.com' ? <img className="member-mini-photo" src="/coaches/dhaidan.jpg" alt="" /> : <span className="member-mini-avatar">{b.display_name.slice(0,1)}</span>}
+                  <span>{b.user_id === buddyMe.user_id ? 'أنت' : b.display_name}{b.in_gym ? ' · بالنادي 🔥' : ''}</span>
+                </span>
                 <b className="num">{b.weekly_sessions}/4</b>
                 <small>{b.weekly_visits} زيارة · {durationLabel(b.weekly_visit_seconds)}</small>
-              </div>
+                <em>اضغط للملخص</em>
+              </button>
             ))}
           </div>
-        ) : <div className="muted" style={{ fontSize: 13 }}>يظهر هنا تقدمك وتقدم عبدالسلام بعد المزامنة.</div>}
+        ) : <div className="muted" style={{ fontSize: 13 }}>يظهر هنا تقدم أعضاء 45/4 بعد المزامنة.</div>}
       </section>
 
       <section className="push-home-card">
         <span className="push-home-icon"><Icon name="bolt" /></span>
         <div className="grow">
           <b>تنبيهات 45/4</b>
-          <small>{pushState === 'enabled' ? 'مفعّلة على هذا الجهاز ✓' : pushState === 'denied' ? 'الإشعارات مرفوضة من إعدادات الجهاز' : pushState === 'unsupported' ? 'افتح 45/4 من أيقونة الشاشة الرئيسية ثم اضغط تحقق' : 'دخول رفيقك، 4/4، التشجيعات، وتنبيها 45 دقيقة والساعة'}</small>
+          <small>{pushState === 'enabled' ? 'مفعّلة على هذا الجهاز ✓' : pushState === 'denied' ? 'الإشعارات مرفوضة من إعدادات الجهاز' : pushState === 'unsupported' ? 'افتح 45/4 من أيقونة الشاشة الرئيسية ثم اضغط تحقق' : 'دخول أعضاء الفريق، 4/4، التشجيعات، وتنبيها 45 دقيقة والساعة'}</small>
         </div>
         {pushState === 'prompt' && <button className="btn btn-sm btn-primary" onClick={() => void enableNotifications()}>تفعيل</button>}
         {pushState === 'unsupported' && <button className="btn btn-sm btn-ghost" onClick={() => void getPushState().then(setPushState)}>تحقق</button>}
@@ -521,12 +537,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* أنا وعبدالسلام — تحفيز فقط، دون أي بيانات صحية خاصة */}
-      <section className="card buddy-card" aria-label="أنا وعبدالسلام">
+      {/* فريق 45/4 — الحضور والتحفيز فقط، دون بيانات صحية خاصة */}
+      <section className="card buddy-card team-card" aria-label="فريق 45/4">
         <div className="row-between buddy-head">
           <div>
-            <div className="eyebrow">رفيق التمرين</div>
-            <div className="card-title">أنا و{buddyMate?.display_name ?? 'رفيق التمرين'} 👥</div>
+            <div className="eyebrow">فريق 45/4</div>
+            <div className="card-title">زياد · عبدالسلام · ضيدان 👥</div>
           </div>
           <button type="button" className="icon-btn" onClick={() => void buddy.refresh()} aria-label="تحديث"><Icon name="undo" size={18} /></button>
         </div>
@@ -538,44 +554,42 @@ export default function Home() {
         )}
 
         {buddy.loading ? (
-          <div className="muted" style={{ fontSize: 13.5 }}>جاري تحميل التحدي…</div>
-        ) : buddy.error || !buddyMe || !buddyMate ? (
-          <div className="muted" style={{ fontSize: 13.5 }}>تعذّر تحميل التحدي الآن. جرّب التحديث بعد قليل.</div>
+          <div className="muted" style={{ fontSize: 13.5 }}>جاري تحميل الفريق…</div>
+        ) : buddy.error || !buddyMe ? (
+          <div className="muted" style={{ fontSize: 13.5 }}>تعذّر تحميل الفريق الآن. جرّب التحديث بعد قليل.</div>
         ) : (
           <>
-            {buddyMate.in_gym ? (
-              <div className="buddy-live-banner">
-                <span className="buddy-live-dot" />
-                <b>{buddyMate.display_name} في النادي الآن 🔥</b>
-                <span>منذ {buddyMate.active_arrived_at ? timeLabel(buddyMate.active_arrived_at) : 'قليل'}</span>
+            {teamStats.some((m) => m.in_gym && m.user_id !== buddyMe.user_id) && (
+              <div className="team-live-strip">
+                {teamStats.filter((m) => m.in_gym && m.user_id !== buddyMe.user_id).map((m) => (
+                  <span key={m.user_id}><i /> <b>{m.display_name}</b> في النادي الآن 🔥</span>
+                ))}
               </div>
-            ) : buddyMate.last_left_at ? (
-              <div className="buddy-last-banner">
-                {buddyMate.display_name} أنهى آخر زيارة · {durationLabel(buddyMate.last_visit_seconds)} 👏
-              </div>
-            ) : null}
+            )}
 
-            <div className="buddy-grid">
-              {[buddyMe, buddyMate].map((b) => (
-                <div className={`buddy-person ${b.in_gym ? 'active' : ''}`} key={b.user_id}>
-                  <div className="buddy-name">{b.user_id === buddyMe.user_id ? 'أنت' : b.display_name}{b.in_gym ? ' · بالنادي' : ''}</div>
+            <div className="buddy-grid team-buddy-grid">
+              {teamStats.map((b) => (
+                <button type="button" className={`buddy-person member-tap ${b.in_gym ? 'active' : ''}`} key={b.user_id} onClick={() => setMemberOpen(b)}>
+                  <div className="team-person-top">
+                    {b.email === 'aboomar335@gmail.com' ? <img className="team-person-photo" src="/coaches/dhaidan.jpg" alt="صورة الكوتش ضيدان" /> : <span className="team-person-avatar">{b.display_name.slice(0,1)}</span>}
+                    <div><div className="buddy-name">{b.user_id === buddyMe.user_id ? 'أنت' : b.display_name}{b.in_gym ? ' · بالنادي' : ''}</div><small>{b.user_id.startsWith('pending:') ? 'بانتظار أول دخول' : 'اضغط لعرض الزيارات'}</small></div>
+                  </div>
                   <div className="buddy-score num">{b.weekly_sessions}/4</div>
                   <div className="buddy-mini"><span>الزيارات</span><b className="num">{b.weekly_visits}</b></div>
                   <div className="buddy-mini"><span>وقت النادي</span><b>{durationLabel(b.weekly_visit_seconds)}</b></div>
-                  <div className="buddy-mini"><span>آخر حضور</span><b>{b.last_arrived_at ? `${attendanceDayLabel(b.last_arrived_at, today)} · ${timeLabel(b.last_arrived_at)}` : '—'}</b></div>
                   <div className="buddy-mini"><span>سلسلة 4/4 🔥</span><b className="num">{b.streak_4of4}</b></div>
-                </div>
+                </button>
               ))}
             </div>
             <div className="buddy-challenge">
-              <span className="buddy-challenge-label">تحدي الأسبوع · أول من يصل 4/4</span>
-              {buddyMe.weekly_sessions === 4 && buddyMate.weekly_sessions === 4
-                ? '🏆 أنتم الاثنين أكملتوا 4/4 هذا الأسبوع'
-                : buddyMe.weekly_sessions === buddyMate.weekly_sessions
-                  ? `التحدي متعادل ${buddyMe.weekly_sessions}/4 — من يكمل التالي؟`
-                  : buddyMe.weekly_sessions > buddyMate.weekly_sessions
-                    ? `أنت متقدم ${buddyMe.weekly_sessions} مقابل ${buddyMate.weekly_sessions} — حافظ على التقدم 💪`
-                    : `${buddyMate.display_name} متقدم ${buddyMate.weekly_sessions} مقابل ${buddyMe.weekly_sessions} — الحق به 😄`}
+              <span className="buddy-challenge-label">تحدي الأسبوع · الفريق كامل</span>
+              {(() => {
+                const max = Math.max(...teamStats.map((m) => m.weekly_sessions));
+                const leaders = teamStats.filter((m) => m.weekly_sessions === max);
+                if (teamStats.every((m) => m.weekly_sessions >= 4)) return '🏆 الفريق كامل أكمل 4/4 هذا الأسبوع';
+                if (leaders.length === teamStats.length) return `التحدي متعادل ${max}/4 — من يتقدم أول؟`;
+                return `${leaders.map((m) => m.user_id === buddyMe.user_id ? 'أنت' : m.display_name).join(' و')} في الصدارة بـ ${max}/4 🔥`;
+              })()}
             </div>
             <div className="buddy-actions buddy-actions-many">
               {(['kfu','fire','beatme','yourturn','beast4'] as BuddyReactionKind[]).map((kind) => (
@@ -584,7 +598,7 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <div className="buddy-privacy">المشاركة هنا للحضور والالتزام فقط — الوزن والقياسات والنبض والسعرات تبقى خاصة تمامًا.</div>
+            <div className="buddy-privacy">اضغط على اسم أي شخص لعرض ملخص الحضور والزيارات. الأوزان والقياسات تبقى خاصة بكل حساب.</div>
           </>
         )}
       </section>
@@ -655,10 +669,13 @@ export default function Home() {
               <button className="btn btn-teal" onClick={() => { downloadGymSummaryCard(exitSummary); toast('تم تجهيز بطاقة للتحميل'); }}><Icon name="download" /> حفظ صورة</button>
               <button className="btn btn-primary" onClick={() => { void shareGymSummary(exitSummary).then((r) => toast(r === 'shared' ? 'تم فتح المشاركة' : 'تم نسخ الملخص')).catch(() => toast('تعذّرت المشاركة الآن')); }}><Icon name="share" /> مشاركة</button>
             </div>
+            {lastExitId && <button className="btn btn-ghost btn-block" onClick={undoExit}><Icon name="undo" /> ضغطت الخروج بالغلط؟ تراجع الآن</button>}
             <p className="muted center" style={{ fontSize: 12.5 }}>بطاقة مختصرة فقط — لا تحتوي وزنًا أو نبضًا أو بيانات صحية خاصة.</p>
           </div>
         )}
       </Sheet>
+
+      <MemberSummarySheet member={memberOpen} open={!!memberOpen} onClose={() => setMemberOpen(null)} isMe={memberOpen?.email.toLowerCase() === buddyMe?.email.toLowerCase()} />
 
       <DayPickerSheet open={pickOpen} onClose={() => setPickOpen(false)} d={d} onPick={(id) => act.startDay(id)} />
       <ShortSheet open={shortOpen} onClose={() => setShortOpen(false)} d={d} onStart={(id, m) => act.startDay(id, m)} />

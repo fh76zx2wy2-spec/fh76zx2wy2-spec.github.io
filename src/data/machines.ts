@@ -27,7 +27,7 @@ export interface Machine {
   keywords?: string[];
 }
 
-export type MachineId =
+export type LegacyMachineId =
   | 'elliptical'
   | 'bike'
   | 'rower'
@@ -59,7 +59,10 @@ export type MachineId =
   | 'seated-calf-raise'
   | 'side-plank';
 
-export const MACHINES: Record<MachineId, Machine> = {
+/** مفاتيح الأجهزة قابلة للتوسع من مكتبة البدائل بدون تقييد الواجهة باتحاد ثابت. */
+export type MachineId = string;
+
+export const MACHINES: Record<string, Machine> = {
   elliptical: {
     id: 'elliptical',
     ar: 'الأوبتيكال (الإليبتيكال)',
@@ -442,26 +445,182 @@ export const MACHINES: Record<MachineId, Machine> = {
 
 };
 
-export const MACHINE_LIST: Machine[] = Object.values(MACHINES);
+
 
 /**
- * بدائل معتمدة داخل نطاق الخطة نفسها (لا تُضاف تمارين من خارج البرنامج).
- * تظهر فقط عند ضغط «لا أستطيع استخدام هذا الجهاز».
- * إن لم يوجد بديل معتمد، يعرض الموقع خيار التخطي فقط.
+ * مكتبة 45/4 الموسّعة: بدائل منتقاة حسب نمط الحركة.
+ * بعض الرسومات/الفيديوهات تُعاد لنفس عائلة الحركة حتى يبقى الموقع خفيفًا وواضحًا.
  */
-export const ALTERNATIVES: Partial<Record<MachineId, { id: MachineId; note: string }[]>> = {
-  'chest-press': [{ id: 'incline-dumbbell-press', note: 'تمرين صدر آخر ضمن Upper B.' }],
-  'incline-dumbbell-press': [{ id: 'chest-press', note: 'جهاز صدر ثابت ضمن Upper A.' }],
-  'lat-pulldown': [{ id: 'seated-row', note: 'تمرين ظهر آخر ضمن Upper B.' }],
-  'seated-row': [{ id: 'lat-pulldown', note: 'تمرين ظهر آخر ضمن Upper A.' }],
-  'biceps-curl': [{ id: 'hammer-curl', note: 'تمرين بايسبس آخر ضمن Upper B.' }],
-  'hammer-curl': [{ id: 'biceps-curl', note: 'تمرين بايسبس آخر ضمن Upper A.' }],
-  'calf-raise': [{ id: 'seated-calf-raise', note: 'رفع السمانة جالسًا ضمن Lower B.' }],
-  'seated-calf-raise': [{ id: 'calf-raise', note: 'رفع السمانة واقفًا ضمن Lower A.' }],
-  plank: [{ id: 'side-plank', note: 'تمرين جذع آخر ضمن Lower B.' }],
-  'side-plank': [{ id: 'plank', note: 'بلانك أمامي ضمن Lower A.' }],
-  elliptical: [{ id: 'bike', note: 'الدراجة العادية خيار كارديو عند الحاجة.' }],
-  'recumbent-bike': [{ id: 'bike', note: 'إذا لم تتوفر الدراجة ذات الظهر استخدم الدراجة العادية بنفس المدة.' }],
+const variant = (
+  id: string,
+  ar: string,
+  en: string,
+  muscles: string,
+  illustration: IllustrationId,
+  guideYoutubeId: string,
+  guideTitle: string,
+  steps: string[],
+  warn: string,
+  keywords: string[] = [],
+): Machine => ({ id, ar, en, group: 'strength', muscles, illustration, guideYoutubeId, guideTitle, steps, warn, keywords });
+
+Object.assign(MACHINES, {
+  // الصدر — دفع أفقي
+  'plate-loaded-chest-press': variant('plate-loaded-chest-press','ضغط صدر Plate Loaded','Plate Loaded Chest Press','الصدر، مقدمة الكتف، الترايسبس','chest-press','xUm0BiZCWlQ','شرح نمط ضغط الصدر — مدرب رجل',['اضبط المقعد لتكون المقابض بمستوى منتصف الصدر.','ثبّت لوحي الكتف للخلف وادفع المقابض للأمام.','ارجع ببطء حتى تمدد مريح دون رفع الكتفين.'],'ابدأ بأقراص قليلة لأن مقاومة الجهاز قد تختلف عن الأجهزة الأخرى.',['صدر','plate loaded']),
+  'converging-chest-press': variant('converging-chest-press','ضغط صدر متقارب','Converging Chest Press','الصدر، مقدمة الكتف، الترايسبس','chest-press','xUm0BiZCWlQ','شرح نمط ضغط الصدر — مدرب رجل',['اضبط المقعد بحيث تبدأ اليدان بمحاذاة الصدر.','ادفع المسارين المتقاربين للأمام مع إبقاء الصدر مرفوعًا.','تحكم في الرجوع ولا تدع الوزن يرتطم.'],'لا تبالغ في تقريب الكتفين للأمام في نهاية الدفع.',['صدر','converging']),
+  'smith-bench-press': variant('smith-bench-press','بنش برس على السميث','Smith Machine Bench Press','الصدر، الترايسبس، مقدمة الكتف','chest-press','xUm0BiZCWlQ','شرح حركة ضغط الصدر — مدرب رجل',['ضع البنش بحيث ينزل البار إلى منتصف الصدر.','اسحب الكتفين للخلف وثبّت القدمين.','انزل بتحكم ثم ادفع للأعلى دون قفل المرفقين.'],'تأكد من أقفال الأمان وابدأ بوزن محافظ.',['صدر','سميث','smith']),
+  'dumbbell-bench-press': variant('dumbbell-bench-press','ضغط صدر دمبل مستوٍ','Flat Dumbbell Bench Press','الصدر، الترايسبس، مقدمة الكتف','incline-dumbbell-press','8iPEnn-ltC8','شرح ضغط الدمبل — مدرب رجل',['استلقِ على بنش مستوٍ والدمبلان بجانب الصدر.','ادفع للأعلى بمسار ثابت حتى تقارب الذراعان الاستقامة.','انزل ببطء إلى عمق مريح.'],'اختر وزنًا يمكنك التحكم به عند رفعه وإنزاله من البنش.',['صدر','دمبل','bench']),
+  'cable-chest-press': variant('cable-chest-press','ضغط صدر بالكيبل','Cable Chest Press','الصدر، الترايسبس، مقدمة الكتف','chest-press','xUm0BiZCWlQ','شرح نمط ضغط الصدر — مدرب رجل',['ضع البكرتين خلفك بمستوى الصدر.','خذ وقفة ثابتة وادفع المقبضين للأمام.','ارجع ببطء مع بقاء الجذع ثابتًا.'],'لا تسمح للكيبل بسحب كتفيك للخلف بعنف.',['صدر','كيبل','cable']),
+  'machine-chest-press-neutral': variant('machine-chest-press-neutral','ضغط صدر قبضة محايدة','Neutral-Grip Chest Press','الصدر والترايسبس مع راحة أكبر للكتف','chest-press','xUm0BiZCWlQ','شرح جهاز ضغط الصدر — مدرب رجل',['اختر القبضة المحايدة إن كانت متاحة.','أبقِ المرفقين أقرب للجسم قليلًا وادفع للأمام.','ارجع بتحكم حتى وضع البداية.'],'إذا شعرت بألم في الكتف خفف الوزن أو اختر جهازًا آخر.',['صدر','قبضة محايدة']),
+
+  // أعلى الصدر — دفع مائل
+  'incline-machine-press': variant('incline-machine-press','ضغط صدر مائل جهاز','Incline Chest Press Machine','أعلى الصدر، مقدمة الكتف، الترايسبس','incline-dumbbell-press','8iPEnn-ltC8','شرح الضغط المائل — مدرب رجل',['اضبط المقعد لتكون المقابض عند أعلى الصدر.','ادفع لأعلى وأمام بمسار الجهاز.','ارجع ببطء دون أن ترتفع كتفاك.'],'لا تجعل الميل عاليًا جدًا حتى لا يتحول التمرين إلى كتف.',['صدر','مائل','جهاز']),
+  'incline-smith-press': variant('incline-smith-press','ضغط مائل على السميث','Incline Smith Press','أعلى الصدر والترايسبس','incline-dumbbell-press','8iPEnn-ltC8','شرح الضغط المائل — مدرب رجل',['اضبط البنش بزاوية خفيفة تحت السميث.','اجعل البار ينزل أعلى الصدر.','ادفع للأعلى مع ثبات القدمين والكتفين.'],'استخدم أقفال الأمان ولا تنزل البار لعمق مؤلم.',['صدر','مائل','smith']),
+  'incline-plate-loaded-press': variant('incline-plate-loaded-press','ضغط مائل Plate Loaded','Incline Plate Loaded Press','أعلى الصدر، الترايسبس، مقدمة الكتف','incline-dumbbell-press','8iPEnn-ltC8','شرح الضغط المائل — مدرب رجل',['اضبط المقعد لتناسب المقابض أعلى صدرك.','ادفع الذراعين للأعلى والأمام دون ارتداد.','ارجع ببطء حتى تمدد مريح.'],'ابدأ بأوزان صغيرة لمعرفة مقاومة الجهاز.',['صدر','مائل','plate loaded']),
+  'incline-cable-press': variant('incline-cable-press','ضغط مائل بالكيبل','Incline Cable Press','أعلى الصدر، الترايسبس','incline-dumbbell-press','8iPEnn-ltC8','شرح الضغط المائل — مدرب رجل',['اضبط البنش بين بكرتين منخفضتين.','ابدأ بالمقابض قرب أعلى الصدر وادفع قطريًا للأعلى.','حافظ على الجذع ثابتًا والرجوع بطيئًا.'],'استخدم وزنًا خفيفًا حتى تثبت مسار الكيبل.',['صدر','مائل','كيبل']),
+  'low-incline-dumbbell-press': variant('low-incline-dumbbell-press','ضغط دمبل ميل خفيف','Low-Incline Dumbbell Press','أعلى ووسط الصدر، الترايسبس','incline-dumbbell-press','8iPEnn-ltC8','شرح ضغط الدمبل المائل — مدرب رجل',['اجعل ميل البنش خفيفًا.','ابدأ بالدمبلين بجانب أعلى الصدر.','ادفع للأعلى ثم انزل ببطء.'],'لا تقوّس أسفل الظهر بحثًا عن تكرار إضافي.',['صدر','مائل','دمبل']),
+
+  // السحب الرأسي للظهر
+  'neutral-grip-pulldown': variant('neutral-grip-pulldown','سحب لات قبضة محايدة','Neutral-Grip Lat Pulldown','الأجنحة والبايسبس','lat-pulldown','CAwf7n6Luuc','شرح السحب العلوي — مدرب رجل',['ثبت الفخذين تحت الوسادة وأمسك المقابض المتوازية.','اسحب نحو أعلى الصدر مع إنزال الكتفين.','ارجع ببطء حتى تمد الذراعين.'],'لا تحوّل الحركة إلى سحب بالجذع للخلف.',['ظهر','لات','محايد']),
+  'close-grip-pulldown': variant('close-grip-pulldown','سحب لات قبضة ضيقة','Close-Grip Lat Pulldown','الأجنحة والبايسبس','lat-pulldown','CAwf7n6Luuc','شرح السحب العلوي — مدرب رجل',['استخدم مقبضًا ضيقًا أو V-bar.','اسحب المقبض إلى أعلى الصدر مع صدر مرفوع.','مد الذراعين ببطء في الرجوع.'],'لا ترفع الكتفين نحو الأذنين.',['ظهر','لات','ضيقة']),
+  'single-arm-pulldown': variant('single-arm-pulldown','سحب لات يد واحدة','Single-Arm Lat Pulldown','الأجنحة والبايسبس','lat-pulldown','CAwf7n6Luuc','شرح نمط السحب العلوي — مدرب رجل',['استخدم مقبضًا منفردًا من البكرة العليا.','اسحب المرفق إلى أسفل وجانب الجذع.','ارجع حتى تمدد مريح ثم بدّل الجهة.'],'لا تلف الجذع أثناء السحب.',['ظهر','لات','يد واحدة']),
+  'assisted-pullup': variant('assisted-pullup','عقلة بمساعدة','Assisted Pull-Up','الأجنحة، أعلى الظهر، البايسبس','lat-pulldown','CAwf7n6Luuc','شرح نمط السحب الرأسي — مدرب رجل',['اختر مقدار مساعدة مناسبًا وثبت الركبتين/القدمين على منصة الجهاز.','ابدأ والكتفان منخفضان ثم اسحب صدرك نحو المقابض.','انزل ببطء حتى تمدد الذراعين.'],'كلما زاد رقم المساعدة صار التمرين أسهل في أغلب الأجهزة.',['ظهر','عقلة','assisted']),
+  'plate-loaded-high-row': variant('plate-loaded-high-row','High Row Plate Loaded','Plate Loaded High Row','الأجنحة وأعلى الظهر والبايسبس','lat-pulldown','CAwf7n6Luuc','شرح نمط السحب للظهر — مدرب رجل',['اضبط المقعد وثبّت الصدر إن كان للجهاز مسند.','اسحب المقابض من أعلى باتجاه أضلاعك.','ارجع ببطء مع تحكم كامل.'],'لا تجعل أسفل الظهر يتحمل الحركة.',['ظهر','high row','plate loaded']),
+  'machine-pullover': variant('machine-pullover','جهاز Pullover للات','Lat Pullover Machine','الأجنحة والعضلة المدورة الكبيرة','lat-pulldown','CAwf7n6Luuc','شرح استهداف عضلات اللات — مدرب رجل',['ثبت ظهرك وصدرَك على الجهاز.','ادفع/اسحب الذراعين من فوق الرأس إلى أسفل باتجاه الجذع.','ارجع ببطء حتى تمدد مريح.'],'المرفقان شبه ثابتين؛ لا تحوّلها إلى ترايسبس.',['ظهر','pullover','لات']),
+
+  // السحب الأفقي للظهر
+  'chest-supported-row': variant('chest-supported-row','تجديف بمسند صدر','Chest-Supported Row','منتصف الظهر، اللات، البايسبس','seated-row','GZbfZ033f74','شرح التجديف الجالس — مدرب رجل',['اضبط المقعد والصدر ملاصق للمسند.','اسحب المقابض نحو أسفل الأضلاع مع ضم لوحي الكتف.','ارجع ببطء دون فقدان وضع الصدر.'],'لا ترفع كتفيك نحو الأذنين.',['ظهر','row','مسند صدر']),
+  'cable-row-neutral': variant('cable-row-neutral','تجديف كيبل قبضة محايدة','Neutral Cable Row','منتصف الظهر والبايسبس','seated-row','GZbfZ033f74','شرح التجديف الجالس — مدرب رجل',['اجلس بظهر محايد وأمسك مقبض V.','اسحب نحو السرة/أسفل الأضلاع.','مد الذراعين ببطء دون تقويس الظهر.'],'لا تستخدم التأرجح لكسب التكرار.',['ظهر','كيبل','row']),
+  'plate-loaded-row': variant('plate-loaded-row','تجديف Plate Loaded','Plate Loaded Row','منتصف الظهر واللات والبايسبس','seated-row','GZbfZ033f74','شرح نمط التجديف — مدرب رجل',['ثبت الصدر أو الجذع حسب تصميم الجهاز.','اسحب الذراعين للخلف باتجاه الأضلاع.','ارجع ببطء حتى تمدد الكتفين دون انهيار الوضعية.'],'ابدأ بأقراص قليلة لمعرفة مقاومة الجهاز.',['ظهر','row','plate loaded']),
+  'one-arm-dumbbell-row': variant('one-arm-dumbbell-row','تجديف دمبل يد واحدة','One-Arm Dumbbell Row','اللات ومنتصف الظهر والبايسبس','seated-row','GZbfZ033f74','شرح نمط التجديف — مدرب رجل',['اسند يدًا وركبة على البنش وثبت الظهر.','اسحب الدمبل باتجاه الورك لا باتجاه الكتف.','انزل ببطء ثم بدّل الجهة.'],'لا تلف الجذع أثناء الرفع.',['ظهر','دمبل','row']),
+  'single-arm-cable-row': variant('single-arm-cable-row','تجديف كيبل يد واحدة','Single-Arm Cable Row','منتصف الظهر واللات','seated-row','GZbfZ033f74','شرح نمط التجديف — مدرب رجل',['اجلس/قف بثبات أمام بكرة أفقية.','اسحب المرفق للخلف بمحاذاة الجذع.','ارجع ببطء دون دوران الجسم.'],'ثبت الحوض والجذع.',['ظهر','كيبل','يد واحدة']),
+  'tbar-row-machine': variant('tbar-row-machine','تجديف T-Bar جهاز','T-Bar Row Machine','منتصف الظهر واللات والبايسبس','seated-row','GZbfZ033f74','شرح نمط التجديف — مدرب رجل',['ثبت صدرك على الوسادة إن وجدت.','اسحب المقابض نحو أسفل الصدر.','ارجع ببطء مع بقاء الرقبة محايدة.'],'لا ترفع الصدر عن المسند لرفع وزن أكبر.',['ظهر','t-bar','row']),
+
+  // الكتف — دفع رأسي
+  'seated-dumbbell-shoulder-press': variant('seated-dumbbell-shoulder-press','ضغط كتف دمبل جالس','Seated Dumbbell Shoulder Press','الأكتاف والترايسبس','shoulder-press','3R14MnZbcpw','شرح ضغط الكتف — مدرب رجل',['اجلس بمسند ظهر والدمبلان عند مستوى الأذن.','ادفع للأعلى دون اصطدام الدمبلين.','انزل بتحكم إلى مستوى مريح.'],'لا تقوّس أسفل الظهر.',['كتف','دمبل','press']),
+  'smith-shoulder-press': variant('smith-shoulder-press','ضغط كتف سميث','Smith Shoulder Press','الأكتاف والترايسبس','shoulder-press','3R14MnZbcpw','شرح ضغط الكتف — مدرب رجل',['ضع بنش بظهر مستقيم تقريبًا تحت السميث.','انزل البار أمام الوجه إلى مستوى مناسب.','ادفع للأعلى مع ثبات الجذع.'],'استخدم أقفال الأمان ووزنًا محافظًا.',['كتف','smith']),
+  'plate-loaded-shoulder-press': variant('plate-loaded-shoulder-press','ضغط كتف Plate Loaded','Plate Loaded Shoulder Press','الأكتاف والترايسبس','shoulder-press','3R14MnZbcpw','شرح ضغط الكتف — مدرب رجل',['اضبط المقعد لتبدأ المقابض قرب مستوى الكتف.','ادفع للأعلى مع إبقاء الرأس والصدر ثابتين.','ارجع ببطء.'],'لا تنزل أعمق من مدى كتفك المريح.',['كتف','plate loaded']),
+  'arnold-press': variant('arnold-press','أرنولد برس دمبل','Arnold Press','الأكتاف والترايسبس','shoulder-press','3R14MnZbcpw','شرح نمط ضغط الكتف — مدرب رجل',['ابدأ بالدمبلين أمام الكتفين والكفان باتجاهك.','افتح الذراعين أثناء الدفع للأعلى.','اعكس الحركة ببطء في النزول.'],'استخدم وزنًا أخف من ضغط الكتف العادي.',['كتف','arnold']),
+  'single-arm-cable-shoulder-press': variant('single-arm-cable-shoulder-press','ضغط كتف كيبل يد واحدة','Single-Arm Cable Shoulder Press','الكتف والترايسبس والجذع','shoulder-press','3R14MnZbcpw','شرح نمط ضغط الكتف — مدرب رجل',['ضع البكرة منخفضة وأمسك المقبض عند الكتف.','ثبت الجذع وادفع للأعلى بيد واحدة.','ارجع ببطء ثم بدّل الجهة.'],'لا تمِل بالجذع لتعويض الوزن.',['كتف','كيبل']),
+  'landmine-press': variant('landmine-press','لاندماين برس','Landmine Press','الكتف العلوي والصدر العلوي والترايسبس','shoulder-press','3R14MnZbcpw','شرح نمط دفع الكتف — مدرب رجل',['ثبت طرف البار في landmine أو زاوية مخصصة.','أمسك الطرف عند الكتف وادفع قطريًا للأعلى.','ارجع بتحكم ثم بدّل الجهة.'],'استخدمه كبديل مريح للكتف عند توفر محطة مخصصة.',['كتف','landmine']),
+
+  // الكتف الخلفي
+  'reverse-pec-deck': variant('reverse-pec-deck','فراشة عكسية للكتف الخلفي','Reverse Pec Deck','الكتف الخلفي وأعلى الظهر','face-pull','rep-qVOkqgk','شرح استهداف الكتف الخلفي — مدرب رجل',['اجلس مواجهًا للمسند واضبط المقابض.','افتح الذراعين للخلف مع مرفقين لينين.','ارجع ببطء دون ارتطام الأوزان.'],'لا تضم لوحي الكتف بعنف؛ ركّز على الكتف الخلفي.',['كتف خلفي','reverse fly']),
+  'rear-delt-cable-fly': variant('rear-delt-cable-fly','رفرفة خلفية بالكيبل','Rear-Delt Cable Fly','الكتف الخلفي وأعلى الظهر','face-pull','rep-qVOkqgk','شرح نمط الكتف الخلفي — مدرب رجل',['استخدم بكرتين متقاطعتين أو مقبضين خفيفين.','افتح الذراعين للخارج والخلف مع ثبات الجذع.','ارجع ببطء.'],'وزن خفيف أفضل من تأرجح ثقيل.',['كتف خلفي','كيبل']),
+  'rear-delt-machine': variant('rear-delt-machine','جهاز الكتف الخلفي','Rear Delt Machine','الكتف الخلفي وأعلى الظهر','face-pull','rep-qVOkqgk','شرح الكتف الخلفي — مدرب رجل',['اضبط المقعد بحيث تكون الذراعان عند مستوى الكتف.','ادفع/افتح المقابض للخلف.','ارجع ببطء مع بقاء الكتفين منخفضين.'],'لا ترفع الكتفين نحو الأذنين.',['كتف خلفي','machine']),
+  'band-face-pull': variant('band-face-pull','فيس بول بالمطاط','Band Face Pull','الكتف الخلفي وأعلى الظهر','face-pull','rep-qVOkqgk','شرح Face Pull — مدرب رجل',['ثبت المطاط عند مستوى الوجه.','اسحب باتجاه الوجه وافتح اليدين للخارج.','ارجع ببطء مع ثبات الجذع.'],'اختر مقاومة تسمح بتحكم كامل.',['كتف خلفي','band']),
+  'incline-rear-delt-raise': variant('incline-rear-delt-raise','رفرفة خلفية على بنش مائل','Incline Rear-Delt Raise','الكتف الخلفي','face-pull','rep-qVOkqgk','شرح نمط الكتف الخلفي — مدرب رجل',['استلقِ بصدرِك على بنش مائل ودمبلان خفيفان.','ارفع الذراعين للجانبين بزاوية مريحة.','انزل ببطء.'],'لا تستخدم أوزانًا تجبرك على تأرجح الذراعين.',['كتف خلفي','دمبل']),
+  'rope-face-pull': variant('rope-face-pull','فيس بول كيبل بالحبل','Rope Face Pull','الكتف الخلفي وأعلى الظهر','face-pull','rep-qVOkqgk','شرح Face Pull — Scott Herman',['ثبت الحبل عند مستوى الوجه.','اسحب إلى الوجه مع فتح طرفي الحبل.','ارجع ببطء وحافظ على المرفقين مرتفعين نسبيًا.'],'استخدم وزنًا خفيفًا إلى متوسط.',['كتف خلفي','rope']),
+
+  // البايسبس
+  'preacher-curl-machine': variant('preacher-curl-machine','جهاز بريتشر بايسبس','Preacher Curl Machine','البايسبس','biceps-curl','sAq_ocpRh_I','شرح حركة بايسبس كيرل — مدرب رجل',['ثبت أعلى الذراعين على وسادة الجهاز.','اثنِ المرفقين لرفع المقابض.','انزل ببطء دون مد المرفق بقوة في الأسفل.'],'لا ترفع كتفيك عن الوسادة.',['بايسبس','preacher','machine']),
+  'cable-biceps-curl': variant('cable-biceps-curl','بايسبس بالكيبل','Cable Biceps Curl','البايسبس','biceps-curl','sAq_ocpRh_I','شرح حركة بايسبس كيرل — مدرب رجل',['استخدم البكرة السفلية واثبت المرفقين بجانب الجسم.','اثنِ المرفقين وارفع المقبض نحو الصدر.','انزل بتحكم.'],'لا تتراجع بالجذع لرفع الوزن.',['بايسبس','كيبل']),
+  'ezbar-curl': variant('ezbar-curl','بايسبس EZ-Bar','EZ-Bar Curl','البايسبس والساعد','biceps-curl','sAq_ocpRh_I','شرح حركة بايسبس كيرل — مدرب رجل',['أمسك البار بقبضة مريحة بعرض الكتفين تقريبًا.','ثبّت المرفقين وارفع البار.','انزل ببطء حتى قرب الاستقامة.'],'لا تستخدم دفع الورك.',['بايسبس','ez bar']),
+  'incline-dumbbell-curl': variant('incline-dumbbell-curl','بايسبس دمبل على بنش مائل','Incline Dumbbell Curl','البايسبس','biceps-curl','sAq_ocpRh_I','شرح حركة بايسبس كيرل — مدرب رجل',['اجلس على بنش مائل والذراعان متدليتان.','اثنِ المرفقين دون تقديم الكتفين.','انزل ببطء.'],'اختر وزنًا أخف بسبب وضعية التمدد.',['بايسبس','دمبل','مائل']),
+  'concentration-curl': variant('concentration-curl','كونسنتريشن كيرل','Concentration Curl','البايسبس','biceps-curl','sAq_ocpRh_I','شرح حركة بايسبس كيرل — مدرب رجل',['اجلس واسند المرفق إلى داخل الفخذ.','ارفع الدمبل نحو الكتف دون تحريك أعلى الذراع.','انزل ببطء ثم بدّل اليد.'],'لا تلف الجذع للمساعدة.',['بايسبس','دمبل']),
+
+  // الترايسبس
+  'rope-triceps-pushdown': variant('rope-triceps-pushdown','ترايسبس حبل','Rope Triceps Pushdown','الترايسبس','triceps-pushdown','_w-HpW70nSQ','شرح دفع الترايسبس — مدرب رجل',['أمسك الحبل من البكرة العليا وثبت المرفقين.','ادفع لأسفل وافتح طرفي الحبل قليلًا.','ارجع ببطء دون تحريك أعلى الذراع.'],'المرفقان يبقيان قرب الجسم.',['ترايسبس','rope']),
+  'overhead-cable-triceps': variant('overhead-cable-triceps','ترايسبس كيبل فوق الرأس','Overhead Cable Triceps Extension','الترايسبس، خصوصًا الرأس الطويل','triceps-pushdown','_w-HpW70nSQ','شرح حركة الترايسبس بالكيبل — مدرب رجل',['اجعل البكرة خلفك وأمسك الحبل فوق الرأس.','ثبت المرفقين وامدد الذراعين للأمام/الأعلى.','ارجع ببطء حتى تمدد مريح.'],'لا توسع المرفقين بشدة.',['ترايسبس','فوق الرأس','كيبل']),
+  'triceps-dip-machine': variant('triceps-dip-machine','جهاز ديبس ترايسبس','Triceps Dip Machine','الترايسبس والصدر','triceps-pushdown','_w-HpW70nSQ','شرح نمط دفع الترايسبس — مدرب رجل',['اجلس وثبت الظهر على المسند.','ادفع المقابض لأسفل حتى قرب استقامة الذراعين.','ارجع ببطء.'],'تجنب ارتفاع الكتفين نحو الأذنين.',['ترايسبس','dip','machine']),
+  'assisted-dip': variant('assisted-dip','ديبس بمساعدة','Assisted Dip','الترايسبس والصدر','triceps-pushdown','_w-HpW70nSQ','شرح نمط دفع الترايسبس — مدرب رجل',['اضبط مقدار المساعدة وثبت الركبتين/القدمين.','انزل بمدى مريح مع مرفقين للخلف.','ادفع للأعلى دون قفل عنيف للمرفقين.'],'لا تنزل لعمق يسبب ألمًا في الكتف.',['ترايسبس','dip','assisted']),
+  'dumbbell-overhead-triceps': variant('dumbbell-overhead-triceps','ترايسبس دمبل فوق الرأس','Dumbbell Overhead Triceps Extension','الترايسبس','triceps-pushdown','_w-HpW70nSQ','شرح نمط تمديد الترايسبس — مدرب رجل',['أمسك دمبلًا واحدًا فوق الرأس بكلتا اليدين.','اثنِ المرفقين وأنزل الدمبل خلف الرأس.','مد الذراعين للأعلى بتحكم.'],'أبقِ الجذع ثابتًا والمرفقين متقاربين.',['ترايسبس','دمبل']),
+
+  // الفخذ الأمامي/الحركة الأساسية
+  'hack-squat': variant('hack-squat','هاك سكوات جهاز','Hack Squat','الفخذ الأمامي والمؤخرة','leg-press','oujca3_Shgw','شرح نمط الدفع بالرجلين — مدرب رجل',['ثبت الكتفين والظهر على المسند وقدماك بعرض مريح.','انزل ببطء مع اتجاه الركبتين نحو أصابع القدم.','ادفع من كامل القدم للعودة.'],'ابدأ خفيفًا وحدد عمقًا مريحًا للركبتين.',['رجل','hack squat']),
+  'pendulum-squat': variant('pendulum-squat','بندول سكوات','Pendulum Squat','الفخذ الأمامي والمؤخرة','leg-press','oujca3_Shgw','شرح نمط الدفع بالرجلين — مدرب رجل',['ثبت الظهر والكتفين على الجهاز واضبط القدمين.','انزل بمسار الجهاز حتى عمق مريح.','ادفع للأعلى دون قفل الركبتين.'],'قد يكون الجهاز أثقل مما يبدو؛ ابدأ قليلًا.',['رجل','pendulum']),
+  'v-squat': variant('v-squat','V-Squat جهاز','V-Squat Machine','الفخذ الأمامي والمؤخرة','leg-press','oujca3_Shgw','شرح نمط الدفع بالرجلين — مدرب رجل',['ثبت الظهر والكتفين واضبط القدمين بعرض مريح.','انزل بتحكم مع بقاء الكعبين ثابتين.','ادفع للأعلى من كامل القدم.'],'تجنب تقريب الركبتين للداخل.',['رجل','v squat']),
+  'smith-squat': variant('smith-squat','سكوات على السميث','Smith Machine Squat','الفخذ الأمامي والمؤخرة والجذع','leg-press','oujca3_Shgw','شرح نمط السكوات — مدرب رجل',['ضع البار على أعلى الظهر وليس الرقبة.','ثبت القدمين وانزل حتى عمق مريح.','ادفع للأعلى مع ثبات الركبتين باتجاه القدمين.'],'استخدم أقفال الأمان ولا تبدأ بوزن كبير.',['رجل','smith','squat']),
+  'goblet-squat': variant('goblet-squat','Goblet Squat دمبل','Goblet Squat','الفخذ الأمامي والمؤخرة والجذع','leg-press','oujca3_Shgw','شرح نمط السكوات — مدرب رجل',['أمسك دمبلًا أمام الصدر.','انزل بين الوركين مع صدر مرفوع.','ادفع الأرض بقدميك للعودة.'],'ابدأ خفيفًا وحافظ على الكعبين ثابتين.',['رجل','دمبل','squat']),
+  'belt-squat': variant('belt-squat','بيلت سكوات','Belt Squat','الفخذان والمؤخرة مع حمل أقل على الظهر','leg-press','oujca3_Shgw','شرح نمط السكوات — مدرب رجل',['ثبت الحزام بمنصة الجهاز حسب التعليمات.','قف بثبات وانزل ببطء إلى عمق مريح.','ادفع للأعلى من كامل القدم.'],'تأكد من تثبيت الحزام قبل بدء السيت.',['رجل','belt squat']),
+
+  // الفخذ الخلفي
+  'lying-leg-curl': variant('lying-leg-curl','ليج كيرل مستلقٍ','Lying Leg Curl','الفخذ الخلفي','leg-curl','ELOCsoDSmrg','شرح ليج كيرل — مدرب رجل',['استلقِ وثبت الوسادة فوق الكعبين/أسفل الساق.','اثنِ الركبتين واسحب الكعبين نحو المؤخرة.','انزل ببطء دون رفع الحوض.'],'لا تقوّس أسفل الظهر.',['رجل','خلفي','lying curl']),
+  'standing-leg-curl': variant('standing-leg-curl','ليج كيرل واقف','Standing Leg Curl','الفخذ الخلفي','leg-curl','ELOCsoDSmrg','شرح ليج كيرل — مدرب رجل',['ثبت الفخذ والجذع على الجهاز.','اثنِ ركبة واحدة واسحب الكعب للخلف.','ارجع ببطء ثم بدّل الرجل.'],'لا تحرك الورك للأمام والخلف.',['رجل','خلفي','standing curl']),
+  'single-leg-curl': variant('single-leg-curl','ليج كيرل رجل واحدة','Single-Leg Curl','الفخذ الخلفي','leg-curl','ELOCsoDSmrg','شرح ليج كيرل — مدرب رجل',['استخدم جهاز الكيرل برجل واحدة إذا يسمح التصميم.','اثنِ الركبة بتحكم حتى نهاية المدى المريح.','ارجع ببطء ثم بدّل الرجل.'],'استخدم وزنًا أقل من تمرين الرجلين معًا.',['رجل','خلفي','single leg']),
+  'cable-leg-curl': variant('cable-leg-curl','ليج كيرل بالكيبل','Cable Leg Curl','الفخذ الخلفي','leg-curl','ELOCsoDSmrg','شرح نمط ثني الركبة — مدرب رجل',['ثبت رباط الكاحل في بكرة منخفضة.','ثبت الفخذ واثنِ الركبة للخلف.','ارجع ببطء دون حركة الورك.'],'ابدأ بمقاومة خفيفة للحفاظ على التوازن.',['رجل','خلفي','كيبل']),
+  'nordic-assisted': variant('nordic-assisted','Nordic Curl مساعد','Assisted Nordic Curl','الفخذ الخلفي','leg-curl','ELOCsoDSmrg','شرح استهداف الفخذ الخلفي — مدرب رجل',['ثبت الكاحلين في محطة مخصصة أو بمساعدة آمنة.','حافظ على الجذع مستقيمًا وانزل ببطء بقدر قدرتك.','استخدم المساعدة باليدين للعودة.'],'تمرين متقدم؛ استخدم مساعدة واضحة ولا تجبر المدى.',['رجل','خلفي','nordic']),
+
+  // رجل واحدة/لانجز
+  'reverse-lunge': variant('reverse-lunge','لانجز خلفي','Reverse Lunge','الفخذان والمؤخرة والتوازن','walking-lunge','COKYKgQ8KR0','شرح اللانجز — مدرب رجل',['خذ خطوة للخلف بدلًا من الأمام.','انزل بالركبة الخلفية باتجاه الأرض مع صدر مرفوع.','ادفع بالقدم الأمامية للعودة.'],'ابدأ بوزن الجسم.',['رجل','lunge','خلفي']),
+  'step-up': variant('step-up','Step-Up على صندوق','Step-Up','الفخذ الأمامي والمؤخرة والتوازن','walking-lunge','COKYKgQ8KR0','شرح نمط الرجل الواحدة — مدرب رجل',['ضع قدمًا كاملة على صندوق/بنش ثابت منخفض.','ادفع من الرجل الموجودة فوق المنصة وارفع الجسم.','انزل بتحكم ثم بدّل الجهة.'],'لا تستخدم منصة مرتفعة أكثر من قدرتك.',['رجل','step up']),
+  'smith-split-squat': variant('smith-split-squat','Split Squat على السميث','Smith Split Squat','الفخذ الأمامي والمؤخرة','bulgarian-split-squat','2C-uNgKwPLE','شرح Split Squat — مدرب رجل',['ضع القدمين في وضع متباعد تحت السميث.','انزل عموديًا ببطء مع ثبات القدمين.','ادفع بالرجل الأمامية للعودة.'],'استخدم أقفال الأمان وابدأ خفيفًا.',['رجل','split squat','smith']),
+  'stationary-split-squat': variant('stationary-split-squat','Split Squat ثابت','Stationary Split Squat','الفخذ الأمامي والمؤخرة والتوازن','bulgarian-split-squat','2C-uNgKwPLE','شرح Split Squat — مدرب رجل',['ثبت وضع القدمين واحدة أمام الأخرى.','انزل عموديًا حتى مدى مريح.','ادفع بالرجل الأمامية دون تغيير مكان القدمين.'],'ابدأ بوزن الجسم.',['رجل','split squat']),
+  'single-leg-press': variant('single-leg-press','ليج برس رجل واحدة','Single-Leg Press','الفخذ الأمامي والمؤخرة','leg-press','oujca3_Shgw','شرح جهاز ضغط الأرجل — مدرب رجل',['ضع قدمًا واحدة في منتصف المنصة بمكان مريح.','ادفع دون تدوير الحوض.','ارجع ببطء ثم بدّل الرجل.'],'خفف الوزن كثيرًا مقارنة بالضغط بالرجلين.',['رجل','leg press','single']),
+
+  // السمانة
+  'legpress-calf-raise': variant('legpress-calf-raise','سمانة على Leg Press','Leg Press Calf Raise','السمانة','calf-raise','ORT4oJ_R8Qs','شرح رفع السمانة — مدرب رجل',['ضع مقدمة القدمين على حافة منصة الليج برس والكعبان حران.','ادفع بأصابع القدم لرفع الكعبين.','انزل ببطء حتى تمدد مريح.'],'لا تثنِ الركبتين كثيرًا أثناء الحركة.',['سمانة','leg press']),
+  'smith-calf-raise': variant('smith-calf-raise','سمانة على السميث','Smith Calf Raise','السمانة','calf-raise','ORT4oJ_R8Qs','شرح رفع السمانة — مدرب رجل',['ضع مقدمة القدمين على قرص/درجة ثابتة إن كانت آمنة.','ارفع الكعبين للأعلى مع ثبات الركبتين نسبيًا.','انزل ببطء.'],'استخدم أقفال الأمان وتمسك جيدًا.',['سمانة','smith']),
+  'standing-calf-machine': variant('standing-calf-machine','جهاز سمانة واقف','Standing Calf Machine','السمانة','calf-raise','ORT4oJ_R8Qs','شرح رفع السمانة — مدرب رجل',['ثبت الكتفين تحت الوسائد ومقدمة القدم على المنصة.','ارفع الكعبين لأعلى ما تستطيع.','انزل ببطء حتى تمدد مريح.'],'لا ترتد من أسفل الحركة.',['سمانة','machine']),
+  'single-leg-calf-raise': variant('single-leg-calf-raise','سمانة رجل واحدة','Single-Leg Calf Raise','السمانة','calf-raise','ORT4oJ_R8Qs','شرح رفع السمانة — مدرب رجل',['قف على رجل واحدة وامسك دعامة للتوازن.','ارفع الكعب لأعلى واثبت لحظة.','انزل ببطء ثم بدّل الجهة.'],'ابدأ بوزن الجسم.',['سمانة','single']),
+  'donkey-calf-raise': variant('donkey-calf-raise','Donkey Calf Raise جهاز','Donkey Calf Raise','السمانة','calf-raise','ORT4oJ_R8Qs','شرح رفع السمانة — مدرب رجل',['ثبت الحوض/الظهر حسب تصميم الجهاز.','اجعل مقدمة القدمين على المنصة.','ارفع الكعبين ثم انزل ببطء.'],'لا ترتد بالوزن.',['سمانة','donkey']),
+
+  // المؤخرة/تمديد الورك
+  'glute-drive-machine': variant('glute-drive-machine','جهاز Glute Drive','Glute Drive Machine','المؤخرة والفخذ الخلفي','hip-thrust','SEdqd1n0cvg','شرح Hip Thrust — مدرب رجل',['ثبت الظهر على المسند والحزام/الوسادة فوق الحوض.','ادفع الحوض للأعلى بشد المؤخرة.','توقف لحظة ثم انزل ببطء.'],'لا تبالغ في تقويس أسفل الظهر.',['مؤخرة','glute drive']),
+  'smith-hip-thrust': variant('smith-hip-thrust','Hip Thrust على السميث','Smith Hip Thrust','المؤخرة والفخذ الخلفي','hip-thrust','SEdqd1n0cvg','شرح Hip Thrust — مدرب رجل',['ثبت أعلى الظهر على بنش ثابت والبار فوق الحوض مع وسادة.','ادفع الحوض للأعلى بشد المؤخرة.','انزل بتحكم حتى مدى مريح.'],'استخدم وسادة للبار وأقفال الأمان.',['مؤخرة','smith','hip thrust']),
+  'barbell-hip-thrust': variant('barbell-hip-thrust','Hip Thrust بالبار','Barbell Hip Thrust','المؤخرة والفخذ الخلفي','hip-thrust','SEdqd1n0cvg','شرح Hip Thrust — مدرب رجل',['ثبت أعلى الظهر على بنش والبار فوق الحوض.','ثبت القدمين وارفع الحوض حتى الجذع أفقي تقريبًا.','انزل ببطء.'],'استخدم وسادة مناسبة للبار.',['مؤخرة','barbell','hip thrust']),
+  'cable-pull-through': variant('cable-pull-through','Cable Pull-Through','Cable Pull-Through','المؤخرة والفخذ الخلفي','hip-thrust','SEdqd1n0cvg','شرح نمط تمديد الورك — مدرب رجل',['قف وظهرك للبكرة السفلية والحبل بين الرجلين.','ادفع الوركين للخلف ثم مد الورك للأمام.','حافظ على ظهر محايد طوال الحركة.'],'الحركة من الورك لا من أسفل الظهر.',['مؤخرة','cable','hinge']),
+  'glute-bridge-machine': variant('glute-bridge-machine','جهاز Glute Bridge','Glute Bridge Machine','المؤخرة والفخذ الخلفي','glute-bridge','8bbE64NuDTU','شرح Glute Bridge — مدرب رجل',['ثبت الظهر والقدمين حسب الجهاز.','ارفع الحوض بشد المؤخرة.','انزل ببطء دون ارتداد.'],'حافظ على البطن مشدودًا.',['مؤخرة','bridge','machine']),
+
+  // الجذع
+  'dead-bug': variant('dead-bug','Dead Bug','Dead Bug','الجذع العميق والتحكم بالحوض','plank','fqzUlmyTpJk','شرح ثبات الجذع — مدرب رجل',['استلقِ وارفع الذراعين والركبتين 90 درجة.','مد ذراعًا والرجل المقابلة ببطء دون رفع أسفل الظهر.','ارجع وبدّل الجهة.'],'قلل المدى إذا بدأ أسفل الظهر يبتعد عن الأرض.',['بطن','core','dead bug']),
+  'bird-dog': variant('bird-dog','Bird Dog','Bird Dog','الجذع والظهر والتوازن','plank','fqzUlmyTpJk','شرح ثبات الجذع — مدرب رجل',['ابدأ على أربع والظهر محايد.','مد ذراعًا والرجل المقابلة دون دوران الحوض.','ارجع وبدّل الجهة.'],'الحركة بطيئة؛ لا ترفع الرجل أعلى من الجذع.',['بطن','core','bird dog']),
+  'pallof-press': variant('pallof-press','Pallof Press بالكيبل','Pallof Press','الجذع ومقاومة الدوران','plank','fqzUlmyTpJk','شرح ثبات الجذع — مدرب رجل',['قف جانب البكرة وأمسك المقبض أمام الصدر.','ادفع اليدين للأمام دون أن يدور الجذع.','ارجع ببطء وكرر ثم بدّل الجهة.'],'استخدم وزنًا يسمح بثبات الحوض.',['بطن','core','cable']),
+  'machine-crunch': variant('machine-crunch','جهاز كرنش البطن','Ab Crunch Machine','عضلات البطن','crunch','NIqgTCTd2MM','شرح الكرنش — مدرب رجل',['اضبط المقعد والوسائد حسب الجهاز.','قرّب القفص الصدري من الحوض بانقباض البطن.','ارجع ببطء دون سحب بالذراعين.'],'الحركة من الجذع لا من الرقبة.',['بطن','crunch','machine']),
+  'cable-crunch': variant('cable-crunch','كرنش بالكيبل','Cable Crunch','عضلات البطن','crunch','NIqgTCTd2MM','شرح الكرنش — مدرب رجل',['اركع أمام البكرة العليا وأمسك الحبل قرب الرأس.','اثنِ الجذع بتقريب الأضلاع من الحوض.','ارجع ببطء دون تحريك الورك كثيرًا.'],'لا تسحب الحبل بذراعيك.',['بطن','كيبل','crunch']),
+});
+
+export interface ExercisePoolOption { id: MachineId; tag: string; note: string }
+export interface ExercisePool { id: string; label: string; cue: string; options: ExercisePoolOption[] }
+const opt = (id: MachineId, tag: string, note: string): ExercisePoolOption => ({ id, tag, note });
+
+export const EXERCISE_POOLS: Record<string, ExercisePool> = {
+  chestHorizontal: { id:'chestHorizontal', label:'الصدر — دفع أفقي', cue:'اختر تمرينًا واحدًا. كلها بدائل لنمط دفع الصدر.', options:[
+    opt('chest-press','جهاز','الاختيار الأبسط والأثبت'), opt('plate-loaded-chest-press','Plate Loaded','إحساس أقرب للأوزان الحرة'), opt('converging-chest-press','جهاز','مسار متقارب مريح'), opt('smith-bench-press','سميث','بديل ثابت للبنش'), opt('dumbbell-bench-press','دمبل','حرية حركة أكبر'), opt('cable-chest-press','كيبل','شد مستمر'), opt('machine-chest-press-neutral','جهاز','قبضة محايدة مريحة للكتف') ]},
+  chestIncline: { id:'chestIncline', label:'أعلى الصدر — دفع مائل', cue:'اختر تمرينًا واحدًا مائلًا لأعلى الصدر.', options:[
+    opt('incline-dumbbell-press','دمبل','المقترح الأساسي'), opt('incline-machine-press','جهاز','أثبت وأسهل في الإعداد'), opt('incline-smith-press','سميث','مسار ثابت'), opt('incline-plate-loaded-press','Plate Loaded','مقاومة حرة على جهاز'), opt('incline-cable-press','كيبل','شد مستمر'), opt('low-incline-dumbbell-press','دمبل','ميل خفيف ومريح') ]},
+  verticalPull: { id:'verticalPull', label:'الظهر — سحب رأسي', cue:'اختر تمرين سحب من أعلى إلى أسفل.', options:[
+    opt('lat-pulldown','جهاز','المقترح الأساسي'), opt('neutral-grip-pulldown','جهاز','قبضة محايدة'), opt('close-grip-pulldown','جهاز','قبضة ضيقة'), opt('single-arm-pulldown','كيبل','يد واحدة'), opt('assisted-pullup','جهاز','عقلة بمساعدة'), opt('plate-loaded-high-row','Plate Loaded','سحب مرتفع'), opt('machine-pullover','جهاز','عزل اللات') ]},
+  horizontalRow: { id:'horizontalRow', label:'الظهر — تجديف أفقي', cue:'اختر Row واحدًا واسحب باتجاه الجذع.', options:[
+    opt('seated-row','جهاز','المقترح الأساسي'), opt('chest-supported-row','جهاز','مسند صدر وثبات أكبر'), opt('cable-row-neutral','كيبل','قبضة محايدة'), opt('plate-loaded-row','Plate Loaded','مقاومة مستقلة'), opt('one-arm-dumbbell-row','دمبل','يد واحدة'), opt('single-arm-cable-row','كيبل','تحكم مستقل'), opt('tbar-row-machine','جهاز','T-Bar بمسند') ]},
+  shoulderPress: { id:'shoulderPress', label:'الكتف — دفع رأسي', cue:'اختر تمرين ضغط كتف واحدًا.', options:[
+    opt('shoulder-press','جهاز','المقترح الأساسي'), opt('seated-dumbbell-shoulder-press','دمبل','حرية حركة'), opt('smith-shoulder-press','سميث','مسار ثابت'), opt('plate-loaded-shoulder-press','Plate Loaded','جهاز محمل بالأقراص'), opt('arnold-press','دمبل','مسار متغير'), opt('single-arm-cable-shoulder-press','كيبل','يد واحدة'), opt('landmine-press','لاندماين','زاوية ألطف على الكتف') ]},
+  rearDelt: { id:'rearDelt', label:'الكتف الخلفي', cue:'اختر تمرينًا واحدًا للكتف الخلفي وأعلى الظهر.', options:[
+    opt('face-pull','كيبل','المقترح الأساسي'), opt('rope-face-pull','كيبل','حبل ومسار مضبوط'), opt('reverse-pec-deck','جهاز','ثابت وواضح'), opt('rear-delt-cable-fly','كيبل','شد مستمر'), opt('rear-delt-machine','جهاز','عزل مباشر'), opt('band-face-pull','مطاط','بديل سريع'), opt('incline-rear-delt-raise','دمبل','على بنش مائل') ]},
+  biceps: { id:'biceps', label:'البايسبس', cue:'اختر تمرين بايسبس واحدًا.', options:[
+    opt('biceps-curl','دمبل','كيرل تقليدي'), opt('hammer-curl','دمبل','قبضة محايدة'), opt('preacher-curl-machine','جهاز','ثبات أعلى الذراع'), opt('cable-biceps-curl','كيبل','شد مستمر'), opt('ezbar-curl','بار','قبضة مريحة'), opt('incline-dumbbell-curl','دمبل','تمدد أكبر'), opt('concentration-curl','دمبل','عزل يد واحدة') ]},
+  triceps: { id:'triceps', label:'الترايسبس', cue:'اختر تمرين ترايسبس واحدًا.', options:[
+    opt('triceps-pushdown','كيبل','بار مستقيم'), opt('rope-triceps-pushdown','كيبل','حبل'), opt('overhead-cable-triceps','كيبل','فوق الرأس'), opt('triceps-dip-machine','جهاز','دفع للأسفل'), opt('assisted-dip','جهاز','ديبس بمساعدة'), opt('dumbbell-overhead-triceps','دمبل','فوق الرأس') ]},
+  kneeDominant: { id:'kneeDominant', label:'الأرجل — حركة أساسية', cue:'اختر تمرينًا واحدًا للفخذ الأمامي والمؤخرة.', options:[
+    opt('leg-press','جهاز','المقترح الأساسي'), opt('hack-squat','جهاز','هاك سكوات'), opt('pendulum-squat','جهاز','بندول سكوات'), opt('v-squat','جهاز','V-Squat'), opt('smith-squat','سميث','سكوات ثابت المسار'), opt('goblet-squat','دمبل','بسيط وواضح'), opt('belt-squat','جهاز','حمل أقل على الظهر') ]},
+  hamstrings: { id:'hamstrings', label:'الفخذ الخلفي — ثني الركبة', cue:'اختر تمرينًا واحدًا للفخذ الخلفي.', options:[
+    opt('leg-curl','جهاز','كيرل جالس'), opt('lying-leg-curl','جهاز','كيرل مستلقٍ'), opt('standing-leg-curl','جهاز','كيرل واقف'), opt('single-leg-curl','جهاز','رجل واحدة'), opt('cable-leg-curl','كيبل','رباط كاحل'), opt('nordic-assisted','وزن جسم','Nordic مساعد') ]},
+  unilateralLeg: { id:'unilateralLeg', label:'الأرجل — رجل واحدة', cue:'اختر تمرينًا أحادي الرجل للتوازن والقوة.', options:[
+    opt('walking-lunge','وزن جسم','لانجز مشي'), opt('bulgarian-split-squat','بنش','بلغاريان'), opt('reverse-lunge','وزن جسم','لانجز خلفي'), opt('step-up','صندوق','Step-Up'), opt('smith-split-squat','سميث','Split Squat ثابت'), opt('stationary-split-squat','وزن جسم','Split Squat'), opt('single-leg-press','جهاز','Leg Press رجل واحدة') ]},
+  calves: { id:'calves', label:'السمانة', cue:'اختر نوع رفع سمانة واحدًا.', options:[
+    opt('calf-raise','واقف','رفع سمانة'), opt('seated-calf-raise','جهاز','جالس'), opt('legpress-calf-raise','جهاز','على Leg Press'), opt('smith-calf-raise','سميث','على السميث'), opt('standing-calf-machine','جهاز','جهاز واقف'), opt('single-leg-calf-raise','وزن جسم','رجل واحدة'), opt('donkey-calf-raise','جهاز','Donkey') ]},
+  glutes: { id:'glutes', label:'المؤخرة — تمديد الورك', cue:'اختر Hip Thrust / Bridge واحدًا.', options:[
+    opt('hip-thrust','بنش','المقترح الأساسي'), opt('glute-drive-machine','جهاز','Glute Drive'), opt('smith-hip-thrust','سميث','Hip Thrust ثابت'), opt('barbell-hip-thrust','بار','النسخة الحرة'), opt('cable-pull-through','كيبل','تمديد ورك'), opt('glute-bridge-machine','جهاز','Glute Bridge') ]},
+  core: { id:'core', label:'الجذع', cue:'اختر تمرين جذع واحدًا بجودة حركة عالية.', options:[
+    opt('plank','وزن جسم','ثبات أمامي'), opt('side-plank','وزن جسم','ثبات جانبي'), opt('dead-bug','وزن جسم','تحكم بالحوض'), opt('bird-dog','وزن جسم','ثبات وتوازن'), opt('pallof-press','كيبل','مقاومة الدوران'), opt('machine-crunch','جهاز','كرنش جهاز'), opt('cable-crunch','كيبل','كرنش كيبل') ]},
 };
+
+const POOL_BY_MACHINE = new Map<string, ExercisePool>();
+Object.values(EXERCISE_POOLS).forEach((pool) => pool.options.forEach((o) => POOL_BY_MACHINE.set(o.id, pool)));
+export function exercisePoolFor(machineId: string): ExercisePool | null { return POOL_BY_MACHINE.get(machineId) ?? null; }
+
+export const MACHINE_LIST: Machine[] = Object.values(MACHINES);
+
+/** بدائل حسب نمط الحركة، مع بقاء بدائل الكارديو البسيطة. */
+export const ALTERNATIVES: Partial<Record<MachineId, { id: MachineId; note: string }[]>> = {};
+for (const pool of Object.values(EXERCISE_POOLS)) {
+  for (const current of pool.options) {
+    ALTERNATIVES[current.id] = pool.options
+      .filter((o) => o.id !== current.id)
+      .map((o) => ({ id: o.id, note: `${o.tag} · ${o.note}` }));
+  }
+}
+ALTERNATIVES.elliptical = [{ id: 'bike', note: 'الدراجة العادية خيار كارديو عند الحاجة.' }];
+ALTERNATIVES['recumbent-bike'] = [{ id: 'bike', note: 'إذا لم تتوفر الدراجة ذات الظهر استخدم الدراجة العادية بنفس المدة.' }];
 
 /** أين يُستخدم الجهاز في البرنامج — يُحسب من بيانات الأيام (انظر program.ts). */
