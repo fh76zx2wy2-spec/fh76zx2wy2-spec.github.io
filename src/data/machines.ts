@@ -645,6 +645,14 @@ const VERIFIED_VARIANT_VIDEOS: Record<string, string> = {
   'barbell-hip-thrust': '0InBEUP0-aA',
   'reverse-pec-deck': 'Z84HkxGCBqQ',
   'cable-pull-through': '4oZ_0_bQcOg',
+  // مقاطع إضافية بأسماء مطابقة للتمارين (تضاف إلى النسخة السابقة دون تغيير البدائل).
+  'smith-bench-press': 'KJSgqUDFe00',
+  'close-grip-pulldown': 'nCLHWEUyyOY',
+  'single-arm-pulldown': 'lboym0z-fxA',
+  'single-arm-cable-row': 'Y9vk5jBXx5s',
+  'chest-supported-row': 'af-WbPlA_iY',
+  'rear-delt-cable-fly': 'QRUaTRQ_M64',
+  'tbar-row-machine': 'TyLoy3n_a10',
 };
 for (const [id, youtubeId] of Object.entries(VERIFIED_VARIANT_VIDEOS)) {
   const machine = MACHINES[id];
