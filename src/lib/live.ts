@@ -7,6 +7,7 @@ import { ALTERNATIVES, MACHINES, type MachineId } from '../data/machines';
 import type { LiveSession, LiveStage, Session, SessionExercise } from './types';
 import type { ResolvedPlan } from './plan';
 import { todayISO } from './dates';
+import { RESISTANCE_BY_DAY, RESISTANCE_MINUTES } from '../data/resistance';
 
 export function uuid(): string {
   const c = globalThis.crypto as Crypto | undefined;
@@ -116,6 +117,25 @@ export function startLiveFromPlan(
     lastBlock = exerciseBaseBlock;
   }
 
+  // خُصصت 5 دقائق من كتلة الحديد السابقة (22 = 17 جهاز + 5 مطاط).
+  // للجلسة الأصلية فقط؛ النسخ المختصرة تبقى كما هي دون ازدحام إضافي.
+  if (meta.type === 'normal') {
+    const items = RESISTANCE_BY_DAY[plan.day.id];
+    stages.push(baseStage({
+      key: 'resistance', kind: 'timed', block: lastBlock + 1,
+      machineId: 'band-pull-apart', seconds: RESISTANCE_MINUTES * 60,
+      reps: `${RESISTANCE_MINUTES} د`,
+      segments: items.map((item, index) => ({
+        kind: 'steady' as const,
+        seconds: item.seconds,
+        label: `تمرين مقاومة ${index + 1}`,
+        stationLabel: MACHINES[item.machineId]?.ar ?? `تمرين مقاومة ${index + 1}`,
+        hint: 'تحرك ببطء وغيّر الشريط إذا شعرت بصعوبة في التحكم.',
+        station: item.machineId,
+      })),
+    }));
+    lastBlock += 1;
+  }
   if (plan.weightsFirst) {
     stages.push(cardioStage(lastBlock + 1));
     lastBlock += 1;

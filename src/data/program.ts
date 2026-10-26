@@ -1,7 +1,7 @@
 /**
  * 45/4 — برنامج موحّد لجميع أعضاء الفريق.
  * السبت Upper A · الأحد Lower A · الثلاثاء Upper B · الأربعاء Lower B.
- * الجلسة الأساسية: 7 دقائق إحماء + 22 حديد + 11 كارديو + 5 إطالة = 45 دقيقة.
+ * الجلسة الأساسية: 7 دقائق إحماء + 17 أجهزة حديد + 5 مقاومة مطاط + 11 كارديو + 5 إطالة = 45 دقيقة.
  */
 import type { MachineId } from './machines';
 
@@ -12,11 +12,12 @@ export interface SessionStructure {
   warmup: number;
   cardio: number;
   iron: number;
+  resistance?: number;
   stretch: number;
   total: number;
 }
 
-export let SESSION_STRUCTURE: SessionStructure = { warmup: 7, cardio: 11, iron: 22, stretch: 5, total: 45 };
+export let SESSION_STRUCTURE: SessionStructure = { warmup: 7, cardio: 11, iron: 17, resistance: 5, stretch: 5, total: 45 };
 
 export interface ActiveProgramMeta {
   key: 'ziyad' | 'abdulsalam' | 'dhaidan' | 'member';
@@ -82,7 +83,7 @@ export let DAYS: DayDef[] = [
     subtitle: 'السبت · 45 دقيقة',
     kind: 'straight',
     cardio: { machineId: 'elliptical', mode: 'steady', note: '11 دقيقة: 6 أوبتيكال + 5 دراجة Upright.' },
-    ironSummary: '22 دقيقة · 5 تمارين',
+    ironSummary: '17 دقيقة أجهزة + 5 دقائق مقاومة · 5 تمارين',
     ironHint: 'في آخر تمرينين: اعمل Biceps Curl ثم Triceps Pushdown بالتبادل لتوفير الوقت. الراحة عمومًا 45–60 ثانية.',
     exercises: [
       { machineId: 'chest-press', sets: 3, reps: '10–12', rest: 60, phaseScaled: false },
@@ -101,7 +102,7 @@ export let DAYS: DayDef[] = [
     subtitle: 'الأحد · 45 دقيقة',
     kind: 'straight',
     cardio: { machineId: 'elliptical', mode: 'steady', note: '11 دقيقة: 6 أوبتيكال + 5 تجديف.' },
-    ironSummary: '22 دقيقة · 5 تمارين',
+    ironSummary: '17 دقيقة أجهزة + 5 دقائق مقاومة · 5 تمارين',
     exercises: [
       { machineId: 'leg-press', sets: 3, reps: '10–12', rest: 60, phaseScaled: false },
       { machineId: 'leg-curl', sets: 3, reps: '8–10', rest: 60, phaseScaled: false },
@@ -119,7 +120,7 @@ export let DAYS: DayDef[] = [
     subtitle: 'الثلاثاء · 45 دقيقة',
     kind: 'straight',
     cardio: { machineId: 'elliptical', mode: 'steady', note: '11 دقيقة: 7 أوبتيكال + 4 Stair Climber.' },
-    ironSummary: '22 دقيقة · 5 تمارين',
+    ironSummary: '17 دقيقة أجهزة + 5 دقائق مقاومة · 5 تمارين',
     exercises: [
       { machineId: 'incline-dumbbell-press', sets: 3, reps: '10–12', rest: 60, phaseScaled: false },
       { machineId: 'seated-row', sets: 3, reps: '10–12', rest: 60, phaseScaled: false },
@@ -137,7 +138,7 @@ export let DAYS: DayDef[] = [
     subtitle: 'الأربعاء · 45 دقيقة',
     kind: 'straight',
     cardio: { machineId: 'elliptical', mode: 'steady', note: '11 دقيقة: 6 أوبتيكال + 5 دراجة Recumbent (والعادية بديل عند عدم توفرها).' },
-    ironSummary: '22 دقيقة · 5 تمارين',
+    ironSummary: '17 دقيقة أجهزة + 5 دقائق مقاومة · 5 تمارين',
     exercises: [
       { machineId: 'leg-press', sets: 3, reps: '10–12', rest: 60, phaseScaled: false },
       { machineId: 'hip-thrust', sets: 3, reps: '10–12', rest: 60, phaseScaled: false },
@@ -303,6 +304,7 @@ export interface ShortPreset {
   warmup: number;
   cardio: number;
   iron: number;
+  resistance?: number;
   stretch: number;
   maxSets: number;
   label: string;

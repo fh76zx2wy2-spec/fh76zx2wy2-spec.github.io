@@ -23,6 +23,9 @@ export function EntryGate({ onEnter }: { onEnter: () => void }) {
         <blockquote>«{quote}»</blockquote>
         <button type="button" className="btn btn-primary btn-lg entry-button" onClick={onEnter}>دخول</button>
         <small>4 أيام · 45 دقيقة</small>
+        <div className="entry-release" aria-label="تحديث التطبيق، الإصدار 1.7.0">
+          <span className="entry-release-dot" aria-hidden="true" /> تم تحديث التطبيق 🥰 <span className="entry-release-version">v1.7.0</span>
+        </div>
       </div>
     </main>
   );

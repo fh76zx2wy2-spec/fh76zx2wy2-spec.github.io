@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DAYS, SAFETY_NOTE, SESSION_STRUCTURE, WEEKLY_GOAL, type DayId } from '../data/program';
 import { MACHINES, exercisePoolFor } from '../data/machines';
+import { CLUB_BY_DAY, RESISTANCE_BY_DAY } from '../data/resistance';
 import { useDerived } from '../lib/derived';
 import { useStartActions } from '../lib/actions';
 import { resolvePlan, setsRepsLabel } from '../lib/plan';
@@ -156,6 +157,31 @@ export default function Workout() {
                   </div>
                 );
               })}
+              <section className="card" style={{margin:'8px 0'}}>
+                <div className="card-title">مقاومة بالمطاط · 5 دقائق</div>
+                <p className="muted" style={{fontSize:12.5,margin:'6px 0 12px'}}>3 تمارين تناسب عضلات اليوم، ضمن زمن الجلسة. أجهزة الحديد 17 دقيقة + مقاومة 5 دقائق.</p>
+                <div className="resistance-list">
+                  {RESISTANCE_BY_DAY[plan.day.id].map((item, i) => {
+                    const m = MACHINES[item.machineId];
+                    return <div key={item.machineId} className="resistance-step">
+                      <Illustration id={m.illustration} className="sm" label={m.ar} />
+                      <div className="grow"><div className="t">{i+1}. {m.ar}</div><div className="s">{m.muscles} · 100 ثانية</div></div>
+                    </div>;
+                  })}
+                </div>
+              </section>
+              <section className="card" style={{margin:'8px 0'}}>
+                <div className="card-title">أجهزة ناديك المناسبة لهذا اليوم</div>
+                <div className="club-device-list" style={{marginTop:10}}>
+                  {CLUB_BY_DAY[plan.day.id].map((item) => {
+                    const m = MACHINES[item.machineId];
+                    return <div className="club-device-item" key={item.machineId}>
+                      <Illustration id={m.illustration} className="sm" label={m.ar} />
+                      <div className="grow"><div className="t">{m.ar}</div><div className="s">{item.note}</div></div>
+                    </div>;
+                  })}
+                </div>
+              </section>
               {plan.day.ironHint && (
                 <div className="note-box cold" style={{ margin: '4px 0 8px' }}>
                   <b>ملاحظة الحديد:</b> {plan.day.ironHint}

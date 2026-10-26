@@ -662,6 +662,66 @@ for (const [id, youtubeId] of Object.entries(VERIFIED_VARIANT_VIDEOS)) {
   machine.guideTitle = `شرح ${machine.ar} — ${machine.en}`;
 }
 
+// الأجهزة الموجودة فعليًا في النادي: لا ننشئ جهازًا ثانيًا للصور المتكررة.
+Object.assign(MACHINES, {
+  'biceps-curl-machine': {
+    id:'biceps-curl-machine', ar:'جهاز البايسبس (هامر سترنث)', en:'Hammer Strength Biceps Curl Machine', group:'strength',
+    muscles:'عضلة البايسبس وأمام الذراع', illustration:'biceps-curl-machine', guideYoutubeId:'c1xKUR79ktU', guideTitle:'تمرين بايسبس على جهاز مخصص',
+    steps:['اضبط ارتفاع المقعد حتى يتوافق محور الجهاز مع مفصل المرفق، وثبت ظهر الذراع على الوسادة إن وجدت.','أمسك المقبضين مع استقرار الكتفين واثنِ المرفقين بهدوء حتى يرتفع الساعد.','أنزل الوزن خلال ثانيتين إلى ثلاث، دون قفل المرفقين أو تحريك الكتفين.'],
+    warn:'إذا اضطررت إلى تحريك ظهرك أو رفع كتفيك فالوزن ثقيل. اضبط الجهاز قبل البدء.',keywords:['بايسبس','biceps','hammer strength','نادي']
+  },
+  'hip-abduction-machine': {
+    id:'hip-abduction-machine', ar:'فتح الفخذين للمؤخرة الجانبية', en:'Life Fitness Hip Abduction Machine', group:'strength',
+    muscles:'المؤخرة الجانبية (الألوية الوسطى والصغرى)، مثبتات الحوض', illustration:'hip-abduction-machine', guideYoutubeId:'830CzAeOaqw', guideTitle:'توضيح جهاز فتح الفخذين',
+    steps:['اجلس وظهرك مستند واضبط وسادتي الفخذين بحيث تبدآن في وضع مريح دون شد مؤلم.','امسك المقبضين، ثم افتح الركبتين إلى الخارج ببطء مع إبقاء الحوض ثابتًا.','توقف لحظة عند المدى المريح ثم عد ببطء دون أن تصطدم الأوزان.'],
+    warn:'هذا جهاز فتح الفخذين للخارج (Abduction)، وليس ضم الفخذين للداخل (Adduction). لا تستخدم اندفاع الجذع.',keywords:['مؤخرة','ورك','فتح الفخذين','hip abduction','glute medius','نادي']
+  }
+});
+
+// تحديث شرح الأجهزة المصوّرة من النادي بدل النصوص العامة.
+Object.assign(MACHINES['leg-curl'], {
+ ar:'الفخذ الخلفي جلوس (لايف فتنس)',en:'Life Fitness Seated Leg Curl',illustration:'leg-curl',
+ steps:['اضبط المقعد ليسند الظهر والحوض، وليكون محور الجهاز بمحاذاة مفصل الركبة.','ثبت الفخذين أسفل الوسادة العلوية واضبط الأسطوانة السفلية فوق الكاحلين.','اسحب الساقين للخلف والأسفل بثني الركبتين دون رفع الحوض، ثم عد ببطء.'],warn:'لا ترفع الحوض عن المقعد ولا تستخدم وزنًا يجبرك على رمي القدمين.'
+});
+Object.assign(MACHINES['lying-leg-curl'], {ar:'ثني الفخذ الخلفي مستلقيًا (هامر سترنث)', en:'Hammer Strength Lying Leg Curl', illustration:'lying-leg-curl',
+ steps:['استلقِ على الوسادة ووجّه الركبتين إلى نقطة مفصل الجهاز، وضع أسطوانة الساق فوق الكاحلين.','شد البطن وثبت الحوض، ثم اثنِ الركبتين لرفع الوسادة نحو المؤخرة بمدى مريح.','أنزل الساقين ببطء مع بقاء الوركين ملاصقين للمسند.'], warn:'لا ترفع الحوض ولا تقوّس أسفل الظهر لتعويض الوزن.'});
+Object.assign(MACHINES['leg-extension'], {ar:'تمديد الفخذ الأمامي (جهاز النادي)',illustration:'leg-extension',
+ steps:['اجلس وظهرك ثابت، واضبط محور الجهاز في محاذاة مفصل الركبة.','ضع الأسطوانة أمام أسفل الساق فوق الكاحلين وامسك المقبضين.','مدّ الركبتين للأمام بتحكم ثم انزل ببطء دون رمي الوزن.'],warn:'اختر وزنًا مناسبًا، ولا تدفع الركبة بقوة إلى نهاية المدى.'});
+Object.assign(MACHINES['standing-calf-machine'], {ar:'السمانة واقف (هامر سترنث)', illustration:'standing-calf-machine',guideYoutubeId:'g_E7_q1z2bo',
+ steps:['ضع مقدمة القدمين على حافة منصة الجهاز والكتفين أسفل الوسادتين.','اثبت الركبتين مع ارتخاء طفيف وارفع الكعبين عاليًا بالضغط بمقدمة القدمين.','انزل ببطء إلى تمدد مريح للسمانة، ثم كرر دون هز الجسم.'],warn:'لا ترتد من أسفل الحركة أو تقفل الركبتين بقوة.'});
+Object.assign(MACHINES['machine-crunch'], {ar:'جهاز البطن (لايف فتنس)',en:'Life Fitness Abdominal Crunch',illustration:'machine-crunch',guideYoutubeId:'kLyXnHGuJO4',
+ steps:['اضبط الجلوس والوسادة حسب طولك وثبّت القدمين في الموضع المخصص.','اسحب الأضلاع نحو الحوض بانقباض عضلات البطن، لا بسحب الذراعين أو الرقبة.','ارجع ببطء حتى تستقيم الجذع في مدى مريح دون الإفراط في تقوس الظهر.'],warn:'تجنب الشد بالرقبة أو دفع الحمل بالورك. ابدأ بمقاومة خفيفة.'});
+Object.assign(MACHINES['pec-deck'], {ar:'فراشة الصدر (لايف فتنس)', en:'Life Fitness Chest Fly / Pec Deck',illustration:'pec-deck',guideYoutubeId:'vmXwGbJe4Lk',
+ steps:['اضبط المقعد بحيث تكون الذراعان والمقابض قرب منتصف الصدر، وثبت الظهر على المسند.','اجمع المقابض أمام الصدر مع انثناء بسيط وثابت بالمرفقين.','عد ببطء إلى فتح مريح للصدر دون مد الذراعين للخلف أكثر من قدرة الكتف.'],warn:'لا تفتح الذراعين بقوة خلف خط الكتف، ولا تجعل الوزن يسحبك للخلف.'});
+Object.assign(MACHINES['leg-press'], {illustration:'leg-press'});
+
+MACHINES["band-chest-press"] = {id:"band-chest-press",ar:"ضغط الصدر بالمطاط",en:"Band Chest Press",group:'strength',muscles:"الصدر والترايسبس",illustration:"resistance-band",guideYoutubeQuery:"Band Chest Press male coach technique",steps:["ثبت الشريط في نقطة مخصصة وثابتة خلفك عند ارتفاع منتصف الصدر.", "تقدم خطوة وادفع اليدين أمام الصدر ببطء دون رفع الكتفين.", "ارجع بتحكم إلى محاذاة الصدر."],warn:"لا تثبّت المطاط في جسم غير آمن أو متحرك.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["band-pull-apart"] = {id:"band-pull-apart",ar:"فتح المطاط للظهر",en:"Band Pull-Apart",group:'strength',muscles:"الكتف الخلفي وأعلى الظهر",illustration:"resistance-band",guideYoutubeQuery:"Band Pull-Apart male coach technique",steps:["امسك المطاط أمام الصدر وذراعاك شبه مستقيمتين.", "افتح اليدين للجانبين مع إبقاء الكتفين منخفضين.", "عد ببطء دون تقويس أسفل الظهر."],warn:"المقاومة خفيفة؛ ركّز على الكتفين لا على دفع الظهر.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["band-triceps-pushdown"] = {id:"band-triceps-pushdown",ar:"دفع الترايسبس بالمطاط",en:"Banded Triceps Pushdown",group:'strength',muscles:"الترايسبس",illustration:"resistance-band",guideYoutubeQuery:"Banded Triceps Pushdown male coach technique",steps:["ثبت الشريط عاليًا في نقطة آمنة ثابتة.", "ضع المرفقين بجانب الجذع وأمسك طرفي الشريط.", "مدّ الساعدين للأسفل ثم عد ببطء دون تحريك الكتفين."],warn:"لا تسمح للشريط بالارتداد إلى وجهك.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["mini-band-squat-hold"] = {id:"mini-band-squat-hold",ar:"ثبات نصف القرفصاء بالمطاط",en:"Mini Band Squat Hold",group:'strength',muscles:"الفخذ الأمامي والمؤخرة",illustration:"resistance-band",guideYoutubeQuery:"Mini Band Squat Hold male coach technique",steps:["ضع المطاط الصغير فوق الركبتين مباشرة.", "انزل إلى نصف قرفصاء مريح مع توزيع الوزن على كامل القدم.", "اثبت مع توجيه الركبتين في اتجاه أصابع القدمين."],warn:"لا تدع الركبتين تنهاران للداخل.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["band-hamstring-curl"] = {id:"band-hamstring-curl",ar:"ثني الفخذ الخلفي بالمطاط",en:"Banded Hamstring Curl",group:'strength',muscles:"الفخذ الخلفي",illustration:"resistance-band",guideYoutubeId:"Nn8KaxGBvPw",steps:["ثبت المطاط أمامك عند مستوى منخفض في نقطة موثوقة وثابتة.", "ضع الطرف الآخر خلف الكاحلين واجلس على مقعد ثابت.", "اثنِ الركبتين واسحب القدمين للخلف ثم ارجع ببطء."],warn:"تأكد أن المطاط لا ينزلق عن الكاحل.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["band-calf-raise"] = {id:"band-calf-raise",ar:"السمانة مع المطاط",en:"Banded Calf Raise",group:'strength',muscles:"السمانة",illustration:"resistance-band",guideYoutubeQuery:"Banded Calf Raise male coach technique",steps:["قف مع الاتكاء على دعامة ثابتة للتوازن والمطاط بمقاومة خفيفة مناسبة.", "ارفع الكعبين لأعلى بتحكم دون ثني الركبتين بعنف.", "انزل ببطء حتى تلامس الكعوب الأرض."],warn:"يمكن أداؤه بوزن الجسم إذا لم يكن إعداد المطاط آمنًا.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["band-row"] = {id:"band-row",ar:"التجديف بالمطاط",en:"Banded Row",group:'strength',muscles:"منتصف الظهر والبايسبس",illustration:"resistance-band",guideYoutubeQuery:"Banded Row male coach technique",steps:["ثبت المطاط في مستوى الصدر بنقطة مصممة للتثبيت.", "اسحب المرفقين للخلف باتجاه الأضلاع مع صدر مرفوع.", "مد الذراعين للأمام ببطء دون تحريك أسفل الظهر."],warn:"لا تلتف بالجسم ولا ترفع كتفيك نحو الأذنين.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["band-biceps-curl"] = {id:"band-biceps-curl",ar:"البايسبس بالمطاط",en:"Banded Biceps Curl",group:'strength',muscles:"البايسبس",illustration:"resistance-band",guideYoutubeQuery:"Banded Biceps Curl male coach technique",steps:["قف على وسط المطاط مع توازن القدمين وأمسك نهايتيه.", "ثبت المرفقين بجانب الخصر، ثم اثنِ الذراعين للأعلى.", "انزل ببطء دون الدفع بالوركين."],warn:"اختر طول مطاطًا لا يضطر المعصم للالتواء.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["band-rear-face-pull"] = {id:"band-rear-face-pull",ar:"فيس بول بالمطاط",en:"Banded Face Pull",group:'strength',muscles:"الكتف الخلفي وأعلى الظهر",illustration:"resistance-band",guideYoutubeId:"KzKvoDaax4s",steps:["ثبت المطاط عند مستوى الوجه في نقطة متينة ثابتة.", "اسحب نحو الوجه وافتح طرفي الشريط مع خروج المرفقين للخارج.", "ارجع ببطء مع ثبات الحوض والرقبة."],warn:"تجنب ارتداد الشريط نحو الوجه، وافحصه قبل التمرين.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["band-glute-bridge"] = {id:"band-glute-bridge",ar:"جسر المؤخرة بالمطاط",en:"Banded Glute Bridge",group:'strength',muscles:"المؤخرة",illustration:"resistance-band",guideYoutubeQuery:"Banded Glute Bridge male coach technique",steps:["ضع شريطًا صغيرًا فوق الركبتين واستلقِ مع ثني الركبتين والقدمين ثابتتين.", "اضغط بالكعبين وارفع الحوض إلى خط مريح من الكتف للركبة.", "اضغط الركبتين للخارج قليلًا ثم أنزل الحوض ببطء."],warn:"لا تبالغ في تقويس الظهر؛ الحركة من الورك.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["lateral-band-walk"] = {id:"lateral-band-walk",ar:"مشي جانبي بالمطاط",en:"Lateral Band Walk",group:'strength',muscles:"المؤخرة الجانبية",illustration:"resistance-band",guideYoutubeQuery:"Lateral Band Walk male coach technique",steps:["ضع الشريط فوق الركبتين أو حول الكاحلين حسب قوتك.", "اثنِ الركبتين قليلًا وأبقِ الحوض مستويًا.", "خذ خطوات جانبية قصيرة مع إبقاء الشريط مشدودًا دون سحب القدمين."],warn:"لا تتمايل بالجذع ولا تدع الركبتين تتجهان للداخل.",keywords:["مطاط","مقاومة","band"]};
+
+MACHINES["band-hip-abduction"] = {id:"band-hip-abduction",ar:"فتح الورك واقفًا بالمطاط",en:"Standing Band Hip Abduction",group:'strength',muscles:"المؤخرة الجانبية وثبات الحوض",illustration:"resistance-band",guideYoutubeQuery:"Standing Band Hip Abduction male coach technique",steps:["ضع شريطًا خفيفًا حول الكاحلين وتمسك بدعامة ثابتة.", "حرّك رجلًا إلى الجانب بمدى صغير مع بقاء الحوض مستقيمًا.", "عد ببطء ثم بدّل الجهة."],warn:"لا تمِل بالجذع لتعويض ضعف عضلات الورك.",keywords:["مطاط","مقاومة","band"]};
+
+// أجهزة جديدة من صور النادي. اربط الجهاز القائم بدل تكرار إدخال الصور لنفس المفتاح.
+EXERCISE_POOLS.biceps.options.push(opt('biceps-curl-machine','جهاز النادي','بايسبس هامر سترنث الثابت'));
+// يظل فتح الورك/فراشة الصدر/كرنش البطن عزلًا مستقلًا، وليس بديلًا مكافئًا للضغط أو البلانك.
 const POOL_BY_MACHINE = new Map<string, ExercisePool>();
 Object.values(EXERCISE_POOLS).forEach((pool) => pool.options.forEach((o) => POOL_BY_MACHINE.set(o.id, pool)));
 export function exercisePoolFor(machineId: string): ExercisePool | null { return POOL_BY_MACHINE.get(machineId) ?? null; }
@@ -681,3 +741,5 @@ ALTERNATIVES.elliptical = [{ id: 'bike', note: 'الدراجة العادية خ
 ALTERNATIVES['recumbent-bike'] = [{ id: 'bike', note: 'إذا لم تتوفر الدراجة ذات الظهر استخدم الدراجة العادية بنفس المدة.' }];
 
 /** أين يُستخدم الجهاز في البرنامج — يُحسب من بيانات الأيام (انظر program.ts). */
+
+

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { DAY_BY_ID, EXTRA_BY_ID, WEIGHT_HINT } from '../data/program';
 import { MACHINES, exercisePoolFor, type MachineId } from '../data/machines';
 import { stretchesForDay, type StretchGuide } from '../data/stretches';
+import { RESISTANCE_BY_DAY, CLUB_BY_DAY } from '../data/resistance';
 import {
   acceptInterstitial,
   alternativesFor,
@@ -186,6 +187,26 @@ export function ExerciseStage({
         </div>
       )}
 
+      {live.day && (() => {
+        const first = live.stages.find((item) => item.kind === 'exercise');
+        return first?.key === stage.key ? (
+          <section className="card">
+            <div className="card-title" style={{marginBottom:5}}>أجهزة النادي المتاحة لهذا اليوم</div>
+            <div className="muted" style={{fontSize:12.5,marginBottom:12}}>صور حقيقية من ناديك · بعضها بديل مباشر وبعضها تمرين عزل اختياري، فلا تضف سيتات فوق خطتك دون وقت.</div>
+            <div className="club-device-list">
+              {CLUB_BY_DAY[live.day].map((item) => {
+                const device = MACHINES[item.machineId];
+                return <div key={item.machineId} className="club-device-item">
+                  <Illustration id={device.illustration} className="sm" label={device.ar}/>
+                  <div className="grow"><div className="t">{device.ar}</div><div className="s">{item.note}</div></div>
+                  <button type="button" className="icon-btn" onClick={() => setGuideMachineId(item.machineId)} aria-label={`شرح ${device.ar}`}><Icon name="play" size={18}/></button>
+                </div>;
+              })}
+            </div>
+          </section>
+        ) : null;
+      })()}
+
       {/* طريقة الاستخدام */}
       {m && (
         <section className="card">
@@ -281,18 +302,19 @@ export function TimedStage({ live, stage, now, title, hint }: { live: LiveSessio
     : stage.kind === 'stretch'
       ? { ar: 'الإطالة', en: 'Stretching' }
       : stage.kind === 'timed'
-        ? { ar: title, en: '' }
+        ? { ar: stage.key === 'resistance' ? 'مقاومة اليوم · 5 دقائق' : title, en: '' }
         : mixedCardio
           ? { ar: 'كارديو متنوع', en: 'Mixed Cardio' }
           : machineName(stage.machineId);
   const stretchGuides = stage.kind === 'stretch' ? stretchesForDay(live.day) : [];
   const [stretchGuide, setStretchGuide] = useState<StretchGuide | null>(null);
+  const [resistanceGuide, setResistanceGuide] = useState<string | null>(null);
 
   return (
     <div className="stack live-stage">
       <section className="card center timed">
         <Illustration id={stage.kind === 'stretch' ? 'stretch' : illId(seg?.station ?? stage.machineId)} className="sm timed-ill" />
-        <div className="eyebrow">{stage.key === 'warmup' ? 'التسخين' : stage.kind === 'cardio' ? 'الكارديو' : stage.kind === 'stretch' ? 'الإطالة' : 'جلسة إضافية'}</div>
+        <div className="eyebrow">{stage.key === 'warmup' ? 'التسخين' : stage.kind === 'cardio' ? 'الكارديو' : stage.kind === 'stretch' ? 'الإطالة' : stage.key === 'resistance' ? 'مقاومة بالمطاط' : 'جلسة إضافية'}</div>
         <h2 className="mname" style={{ marginTop: 2 }}>{name.ar}</h2>
         {name.en && <div className="en muted mname-en">{name.en}</div>}
         <div className="timed-ring">
@@ -315,9 +337,9 @@ export function TimedStage({ live, stage, now, title, hint }: { live: LiveSessio
         {over && <div className="note-box cold" style={{ textAlign: 'start' }}>أحسنت! يمكنك الانتقال للمرحلة التالية.</div>}
       </section>
 
-      {segs.length > 1 && (
+      {segs.length > 1 && stage.key !== 'resistance' && (
         <section className="card">
-          <div className="card-title" style={{ marginBottom: 10 }}>{mixedCardio ? 'خطة الكارديو' : stage.key === 'warmup' ? 'خطة الإحماء' : stage.kind === 'stretch' ? 'خطة الإطالة' : 'جدول المرحلة'}</div>
+          <div className="card-title" style={{ marginBottom: 10 }}>{mixedCardio ? 'خطة الكارديو' : stage.key === 'warmup' ? 'خطة الإحماء' : stage.kind === 'stretch' ? 'خطة الإطالة' : stage.key === 'resistance' ? 'خطة مقاومة اليوم' : 'جدول المرحلة'}</div>
           <div className="segline" aria-hidden="true">
             {segs.map((s, i) => (
               <i key={i} className={`${s.kind} ${i === segIdx ? 'cur' : ''} ${i < segIdx ? 'past' : ''}`} style={{ flexGrow: s.seconds }} />
@@ -339,6 +361,27 @@ export function TimedStage({ live, stage, now, title, hint }: { live: LiveSessio
           )}
         </section>
       )}
+
+      {stage.key === 'resistance' && live.day && (
+        <section className="card">
+          <div className="row-between" style={{marginBottom:10}}>
+            <div><div className="eyebrow">تمارين المقاومة</div><div className="card-title">3 تمارين · 5 دقائق</div></div>
+            <span className="tag tag-cold">ضمن 45 دقيقة</span>
+          </div>
+          <div className="note-box cold resistance-intro" style={{marginBottom:12}}>خفيف وبتحكم، لا تصل إلى الإنهاك بعد أجهزة الحديد. نفّذ كل تمرين خلال 100 ثانية تشمل التهيئة والتكرارات والتنقل.</div>
+          <div className="resistance-list">
+            {RESISTANCE_BY_DAY[live.day].map((item, i) => {
+              const drill = MACHINES[item.machineId];
+              return <div className="resistance-step" key={item.machineId}>
+                <Illustration id={drill.illustration} className="sm" label={drill.ar} />
+                <div className="grow"><div className="t">{i+1}. {drill.ar}</div><div className="s">{drill.muscles} · 1:40 دقيقة</div><div className="s">{drill.steps[0]}</div></div>
+                <button type="button" className="icon-btn" aria-label={`شرح ${drill.ar}`} onClick={() => setResistanceGuide(item.machineId)}><Icon name="play" size={18}/></button>
+              </div>;
+            })}
+          </div>
+        </section>
+      )}
+      <ExerciseVideoGuide machine={resistanceGuide ? MACHINES[resistanceGuide] : null} onClose={() => setResistanceGuide(null)} />
 
       {stretchGuides.length > 0 && (
         <section className="card stretch-library-card">

@@ -2,6 +2,8 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { ILLUSTRATIONS } from '../data/illustrations.generated';
 import { buildFallbackIllustration } from './illustrationFallback';
 
+const CLUB_PHOTOS = new Set(['leg-curl','lying-leg-curl','leg-extension','biceps-curl-machine','machine-crunch','standing-calf-machine','pec-deck','hip-abduction-machine','leg-press','resistance-band']);
+
 /**
  * رسم الجهاز (SVG متجهي مستخرج من PDF). الألوان عبر متغيرات CSS فتتبدّل مع الوضع الداكن.
  * lazy: لا يُرسَم إلا عند اقترابه من الشاشة (مفيد في شبكة دليل الأجهزة).
@@ -41,9 +43,12 @@ export const Illustration = memo(function Illustration({
   }, [lazy, visible]);
 
   const ill = ILLUSTRATIONS[id] ?? buildFallbackIllustration(id);
+  const clubPhoto = CLUB_PHOTOS.has(id) ? `/club-machines/${id}.webp` : null;
   return (
-    <div ref={ref} className={`ill ${className}`} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
-      {visible && ill ? (
+    <div ref={ref} className={`ill ${className} ${clubPhoto ? 'club-photo-ill' : ''}`} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
+      {visible && clubPhoto ? (
+        <img src={clubPhoto} alt={label ?? ''} loading="lazy" />
+      ) : visible && ill ? (
         <svg viewBox={ill.vb} preserveAspectRatio="xMidYMid meet" dangerouslySetInnerHTML={{ __html: ill.body }} />
       ) : null}
     </div>
