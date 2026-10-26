@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DAYS, SAFETY_NOTE, SESSION_STRUCTURE, WEEKLY_GOAL, type DayId } from '../data/program';
 import { MACHINES, exercisePoolFor } from '../data/machines';
-import { CLUB_BY_DAY, RESISTANCE_BY_DAY } from '../data/resistance';
+import { RESISTANCE_BY_DAY } from '../data/resistance';
 import { useDerived } from '../lib/derived';
 import { useStartActions } from '../lib/actions';
 import { resolvePlan, setsRepsLabel } from '../lib/plan';
@@ -49,9 +49,9 @@ export default function Workout() {
             <div className="eyebrow">المقترح اليوم</div>
             <div className="row-between" style={{ alignItems: 'flex-start', gap: 12 }}>
               <div className="grow"><div className="card-title">{todayDay.title}</div><div className="card-sub">{todayDay.subtitle} · {todayDay.ironSummary}</div></div>
-              <span className="tag tag-hot">45 دقيقة</span>
+              <span className="tag tag-hot">45 دقيقة تقريبًا</span>
             </div>
-            <div className="today-workout-note">الإحماء والحديد والكارديو والإطالة مطلوبة اليوم، لكن <b>الترتيب متروك لك</b>. ويمكنك الرجوع لأي جزء لم تكمله.</div>
+            <div className="today-workout-note">الإحماء والحديد والمقاومة والكارديو والإطالة ضمن البرنامج، لكن <b>الترتيب متروك لك</b>. ويمكنك الرجوع لأي جزء لم تكمله.</div>
             <button className="btn btn-primary btn-lg btn-block" onClick={() => act.startDay(todayDay.id)}><Icon name="play" /> ابدأ تمرين اليوم</button>
           </section>
         );
@@ -89,7 +89,7 @@ export default function Workout() {
       <div className="card">
         <button className="list-row" style={{ padding: '4px 0' }} onClick={() => setShortOpen(true)}>
           <span className="ic"><Icon name="bolt" /></span>
-          <div className="grow"><div className="t">وقتي اليوم قصير</div><div className="s">نسخة مختصرة من الجلسة الأصلية {SESSION_STRUCTURE.total} دقيقة</div></div>
+          <div className="grow"><div className="t">وقتي اليوم قصير</div><div className="s">اختصار اختياري للجلسة، ومدة {SESSION_STRUCTURE.total} دقيقة مجرد مثال</div></div>
           <Icon name="chevL" className="chev" />
         </button>
         <button className="list-row" style={{ padding: '4px 0' }} onClick={() => setExtraOpen(true)}>
@@ -121,7 +121,7 @@ export default function Workout() {
           <>
             <div className="chips">
               <span className="tag">{plan.phase.badge}</span>
-              <span className="tag">{SESSION_STRUCTURE.total} دقيقة</span>
+              <span className="tag">المدة مرنة · نحو {SESSION_STRUCTURE.total} دقيقة</span>
               {d.info.doneDays.has(plan.day.id) && <span className="tag tag-solid"><Icon name="check" size={14} /> مكتمل هذا الأسبوع</span>}
             </div>
             <div className="plan-list">
@@ -159,25 +159,13 @@ export default function Workout() {
               })}
               <section className="card" style={{margin:'8px 0'}}>
                 <div className="card-title">مقاومة بالمطاط · 5 دقائق</div>
-                <p className="muted" style={{fontSize:12.5,margin:'6px 0 12px'}}>3 تمارين تناسب عضلات اليوم، ضمن زمن الجلسة. أجهزة الحديد 17 دقيقة + مقاومة 5 دقائق.</p>
+                <p className="muted" style={{fontSize:12.5,margin:'6px 0 12px'}}>3 تمارين تناسب عضلات اليوم · 5 دقائق مقترحة؛ خذ وقتك في أجهزة الحديد دون استعجال.</p>
                 <div className="resistance-list">
                   {RESISTANCE_BY_DAY[plan.day.id].map((item, i) => {
                     const m = MACHINES[item.machineId];
                     return <div key={item.machineId} className="resistance-step">
                       <Illustration id={m.illustration} className="sm" label={m.ar} />
                       <div className="grow"><div className="t">{i+1}. {m.ar}</div><div className="s">{m.muscles} · 100 ثانية</div></div>
-                    </div>;
-                  })}
-                </div>
-              </section>
-              <section className="card" style={{margin:'8px 0'}}>
-                <div className="card-title">أجهزة ناديك المناسبة لهذا اليوم</div>
-                <div className="club-device-list" style={{marginTop:10}}>
-                  {CLUB_BY_DAY[plan.day.id].map((item) => {
-                    const m = MACHINES[item.machineId];
-                    return <div className="club-device-item" key={item.machineId}>
-                      <Illustration id={m.illustration} className="sm" label={m.ar} />
-                      <div className="grow"><div className="t">{m.ar}</div><div className="s">{item.note}</div></div>
                     </div>;
                   })}
                 </div>

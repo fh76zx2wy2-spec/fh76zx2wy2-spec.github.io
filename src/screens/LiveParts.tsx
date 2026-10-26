@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { DAY_BY_ID, EXTRA_BY_ID, WEIGHT_HINT } from '../data/program';
 import { MACHINES, exercisePoolFor, type MachineId } from '../data/machines';
 import { stretchesForDay, type StretchGuide } from '../data/stretches';
-import { RESISTANCE_BY_DAY, CLUB_BY_DAY } from '../data/resistance';
+import { RESISTANCE_BY_DAY } from '../data/resistance';
 import {
   acceptInterstitial,
   alternativesFor,
@@ -187,26 +187,6 @@ export function ExerciseStage({
         </div>
       )}
 
-      {live.day && (() => {
-        const first = live.stages.find((item) => item.kind === 'exercise');
-        return first?.key === stage.key ? (
-          <section className="card">
-            <div className="card-title" style={{marginBottom:5}}>أجهزة النادي المتاحة لهذا اليوم</div>
-            <div className="muted" style={{fontSize:12.5,marginBottom:12}}>صور حقيقية من ناديك · بعضها بديل مباشر وبعضها تمرين عزل اختياري، فلا تضف سيتات فوق خطتك دون وقت.</div>
-            <div className="club-device-list">
-              {CLUB_BY_DAY[live.day].map((item) => {
-                const device = MACHINES[item.machineId];
-                return <div key={item.machineId} className="club-device-item">
-                  <Illustration id={device.illustration} className="sm" label={device.ar}/>
-                  <div className="grow"><div className="t">{device.ar}</div><div className="s">{item.note}</div></div>
-                  <button type="button" className="icon-btn" onClick={() => setGuideMachineId(item.machineId)} aria-label={`شرح ${device.ar}`}><Icon name="play" size={18}/></button>
-                </div>;
-              })}
-            </div>
-          </section>
-        ) : null;
-      })()}
-
       {/* طريقة الاستخدام */}
       {m && (
         <section className="card">
@@ -368,7 +348,7 @@ export function TimedStage({ live, stage, now, title, hint }: { live: LiveSessio
             <div><div className="eyebrow">تمارين المقاومة</div><div className="card-title">3 تمارين · 5 دقائق</div></div>
             <span className="tag tag-cold">ضمن 45 دقيقة</span>
           </div>
-          <div className="note-box cold resistance-intro" style={{marginBottom:12}}>خفيف وبتحكم، لا تصل إلى الإنهاك بعد أجهزة الحديد. نفّذ كل تمرين خلال 100 ثانية تشمل التهيئة والتكرارات والتنقل.</div>
+          <div className="note-box cold resistance-intro" style={{marginBottom:12}}>خفيف وبتحكم، ولا تصل إلى الإنهاك. الخمس دقائق مقترحة، ويمكنك إكمال الحديد بوقتك.</div>
           <div className="resistance-list">
             {RESISTANCE_BY_DAY[live.day].map((item, i) => {
               const drill = MACHINES[item.machineId];

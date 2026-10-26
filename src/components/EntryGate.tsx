@@ -22,9 +22,9 @@ export function EntryGate({ onEnter }: { onEnter: () => void }) {
         <div className="entry-coach">الكوتش <span>/</span> {name}</div>
         <blockquote>«{quote}»</blockquote>
         <button type="button" className="btn btn-primary btn-lg entry-button" onClick={onEnter}>دخول</button>
-        <small>4 أيام · 45 دقيقة</small>
-        <div className="entry-release" aria-label="تحديث التطبيق، الإصدار 1.7.0">
-          <span className="entry-release-dot" aria-hidden="true" /> تم تحديث التطبيق 🥰 <span className="entry-release-version">v1.7.0</span>
+        <small>4 أيام · 45 دقيقة هدف تقريبي</small>
+        <div className="entry-release" aria-label="تحديث التطبيق، الإصدار 1.8.0">
+          <span className="entry-release-dot" aria-hidden="true" /> <strong>تم تحديث التطبيق 🥰</strong> <span className="entry-release-version">v1.8.0</span>
         </div>
       </div>
     </main>

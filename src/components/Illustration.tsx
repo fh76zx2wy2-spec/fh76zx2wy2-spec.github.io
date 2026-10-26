@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { ILLUSTRATIONS } from '../data/illustrations.generated';
 import { buildFallbackIllustration } from './illustrationFallback';
 
-const CLUB_PHOTOS = new Set(['leg-curl','lying-leg-curl','leg-extension','biceps-curl-machine','machine-crunch','standing-calf-machine','pec-deck','hip-abduction-machine','leg-press','resistance-band']);
+const CLUB_ILLUSTRATIONS = new Set(['leg-curl','lying-leg-curl','leg-extension','biceps-curl-machine','pec-deck','standing-calf-machine','machine-crunch','hip-abduction-machine','leg-press']);
 
 /**
  * رسم الجهاز (SVG متجهي مستخرج من PDF). الألوان عبر متغيرات CSS فتتبدّل مع الوضع الداكن.
@@ -43,11 +43,11 @@ export const Illustration = memo(function Illustration({
   }, [lazy, visible]);
 
   const ill = ILLUSTRATIONS[id] ?? buildFallbackIllustration(id);
-  const clubPhoto = CLUB_PHOTOS.has(id) ? `/club-machines/${id}.webp` : null;
+  const clubArtwork = CLUB_ILLUSTRATIONS.has(id) ? `/club-illustrations/${id}.svg` : null;
   return (
-    <div ref={ref} className={`ill ${className} ${clubPhoto ? 'club-photo-ill' : ''}`} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
-      {visible && clubPhoto ? (
-        <img src={clubPhoto} alt={label ?? ''} loading="lazy" />
+    <div ref={ref} className={`ill ${className} ${clubArtwork ? 'club-vector-ill' : ''}`} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
+      {visible && clubArtwork ? (
+        <img src={clubArtwork} alt={label ?? ''} loading="lazy" />
       ) : visible && ill ? (
         <svg viewBox={ill.vb} preserveAspectRatio="xMidYMid meet" dangerouslySetInnerHTML={{ __html: ill.body }} />
       ) : null}
