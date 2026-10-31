@@ -851,3 +851,13 @@ details.card > summary::-webkit-details-marker { display: none; }
 @keyframes release-pop { from { opacity:0; transform: translateY(12px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
 @media (max-height: 680px) { .release-modal { padding: 16px; } .release-modal-list { gap: 5px; } .release-modal-list li { padding: 8px 10px; } }
 @media (prefers-reduced-motion: reduce) { .release-modal { animation: none; } }
+
+/* v1.9.2 — إدخال المسافة بعد انتهاء النشاط، وليس قبل بدايته */
+.sport-distance-after-note{margin:0;padding:9px 12px;border-radius:12px;background:var(--cold-bg,#edf8f6);color:var(--muted,#62767b);font-size:13px;line-height:1.65}
+.sport-finish-confirm{display:grid;gap:12px;background:var(--surface,#fff);border:1px solid var(--line,#d7e2e5);border-radius:18px;padding:16px}
+.sport-finish-confirm h3{font-size:20px;font-weight:900;margin:0}
+.sport-finish-confirm p{margin:0;font-size:15px;line-height:1.6}
+.sport-finish-confirm .label{display:grid;gap:7px}
+.sport-finish-confirm .input{font-size:17px}
+.sport-setup-error p{margin:0 0 10px}
+.sport-setup-error .btn{white-space:normal;text-align:center;border:1px solid currentColor}

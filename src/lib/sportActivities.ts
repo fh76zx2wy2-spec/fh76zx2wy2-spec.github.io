@@ -28,7 +28,6 @@ export type SportActivity = {
   date: string;
   sport_key: SportKey;
   sport_label: string | null;
-  target_distance_km: number | null;
   distance_km: number | null;
   started_at: string;
   ended_at: string | null;
@@ -44,8 +43,13 @@ export function sportLabel(record: Pick<SportActivity, 'sport_key' | 'sport_labe
 async function sendSportPush(action: 'sport-started' | 'sport-finished', activityId: string): Promise<void> {
   if (!supabase) return;
   // لا يغيّر الاشتراك، ولا يستدعي enablePush أو يطلب إعادة الأذونات.
-  const { error } = await supabase.functions.invoke('push-45-4', { body: { action, activityId } });
-  if (error) console.warn('Sport push not delivered:', error.message);
+  try {
+    const { error } = await supabase.functions.invoke('push-45-4', { body: { action, activityId } });
+    if (error) console.warn('Sport push not delivered:', error.message);
+  } catch (e) {
+    // فشل مؤقت في الإشعارات لا يلغي النشاط المحفوظ في قاعدة البيانات.
+    console.warn('Sport push not delivered:', e);
+  }
 }
 
 function checkDistance(raw: string): number | null {
@@ -65,9 +69,17 @@ export function useSportActivities() {
   const refresh = useCallback(async () => {
     if (!supabase || !user?.id) { setRecords([]); setLoading(false); return; }
     const { data, error: dbError } = await supabase.from('sport_activities')
-      .select('id,user_id,date,sport_key,sport_label,target_distance_km,distance_km,started_at,ended_at,duration_seconds')
+      .select('id,user_id,date,sport_key,sport_label,distance_km,started_at,ended_at,duration_seconds')
       .eq('user_id', user.id).order('started_at', { ascending: false }).limit(300);
-    if (dbError) { setError('تعذر تحميل الرياضات الأخرى. تأكد من تطبيق تحديث SQL.'); setLoading(false); return; }
+    if (dbError) {
+      // فشل القراءة قد يعني أن جدول الرياضات لم يُنشأ بعد، أو أن صلاحية الحساب تحتاج إصلاحًا.
+      const missingTable = dbError.code === '42P01' || dbError.code === 'PGRST205' || /sport_activities.*(not found|does not exist)/i.test(dbError.message);
+      setError(missingTable
+        ? 'لم تُفعَّل الرياضات الخارجية في Supabase بعد. نفّذ ملف SQL الخاص بالرياضات، ثم اضغط «إعادة التحقق».'
+        : `تعذر تحميل الرياضات من قاعدة البيانات (${dbError.message}). راجع إعدادات SQL والصلاحيات ثم أعد التحقق.`);
+      setLoading(false);
+      return;
+    }
     setRecords((data ?? []) as SportActivity[]);
     setError(null);
     setLoading(false);
@@ -83,10 +95,9 @@ export function useSportActivities() {
 
   const active = useMemo(() => records.find((r) => r.ended_at === null) ?? null, [records]);
 
-  const start = useCallback(async (sportKey: SportKey, label: string, targetDistance: string) => {
+  const start = useCallback(async (sportKey: SportKey, label: string) => {
     if (!supabase || !user?.id) throw new Error('سجّل الدخول أولًا.');
     if (active) throw new Error('يوجد نشاط جارٍ. أنهه قبل بدء نشاط آخر.');
-    const distance = checkDistance(targetDistance);
     const option = SPORT_OPTIONS.find((o) => o.key === sportKey);
     if (!option) throw new Error('اختر نوع الرياضة.');
     const sportLabelValue = sportKey === 'other' ? label.trim().slice(0, 45) : null;
@@ -95,11 +106,10 @@ export function useSportActivities() {
     try {
       const { data, error: dbError } = await supabase.from('sport_activities').insert({
         user_id: user.id, sport_key: sportKey, sport_label: sportLabelValue,
-        target_distance_km: option.distance ? distance : null,
       }).select('id').single();
-      if (dbError || !data) throw new Error(dbError?.message || 'تعذر بدء الرياضة.');
+      if (dbError || !data) throw new Error(dbError?.code === '42P01' || dbError?.code === 'PGRST205' ? 'لم يُجهَّز جدول الرياضات في Supabase بعد. نفّذ SQL ثم حاول مجددًا.' : (dbError?.message || 'تعذر بدء الرياضة.'));
       await refresh();
-      void sendSportPush('sport-started', data.id);
+      await sendSportPush('sport-started', data.id);
     } finally { setBusy(false); }
   }, [user?.id, active, refresh]);
 
@@ -114,7 +124,7 @@ export function useSportActivities() {
         .select('id').single();
       if (dbError || !data) throw new Error(dbError?.message || 'تعذر إنهاء الرياضة.');
       await refresh();
-      void sendSportPush('sport-finished', data.id);
+      await sendSportPush('sport-finished', data.id);
     } finally { setBusy(false); }
   }, [user?.id, refresh]);
 
