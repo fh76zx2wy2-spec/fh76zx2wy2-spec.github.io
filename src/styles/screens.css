@@ -801,3 +801,53 @@ details.card > summary::-webkit-details-marker { display: none; }
 .entry-release-version { font-size:14px; font-weight:900; color:var(--cold-ink, var(--cold)); border-radius:9px; background:color-mix(in srgb, var(--cold) 15%, var(--surface)); padding:2px 8px; }
 .entry-release-dot { width:10px; height:10px; flex-shrink:0; box-shadow:0 0 0 4px color-mix(in srgb, var(--cold) 10%, transparent); }
 @media(max-width:385px){.entry-release{font-size:15px;padding:9px 13px;}}
+
+/* 45/4 · v1.9.0 · رياضة خارج النادي — لا تغيّر أنماط الدخول القائمة */
+.activity-arrival-buttons{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:10px;align-items:stretch}
+.activity-arrival-buttons .gym-arrive-btn{width:100%;min-width:0;min-height:76px}
+.activity-arrival-buttons .gym-arrive-btn:disabled{opacity:.55;cursor:not-allowed}
+.sport-open-btn{min-width:0;border:1.5px solid var(--border,var(--line,#d4e1e3));border-radius:18px;background:var(--card,#fff);color:var(--ink,#183b40);padding:10px 11px;display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:center;font:inherit;cursor:pointer;line-height:1.35}
+.sport-open-btn span{font-size:17px;font-weight:900}
+.sport-open-btn small{font-size:11px;color:var(--muted,#6a7e80);text-align:center}
+.sport-open-btn:focus-visible,.sport-choice:focus-visible{outline:3px solid var(--teal,#0c837e);outline-offset:2px}
+.sport-live-indicator{padding:9px 13px;background:var(--cold-bg,#edf8f6);border-radius:12px;margin-top:10px;font-size:13px}
+.sport-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sport-choice{border:1.5px solid var(--line,#d7e2e5);border-radius:15px;background:var(--card,#fff);color:var(--ink,#1b373c);padding:13px 8px;display:flex;align-items:center;justify-content:center;gap:8px;font:inherit;cursor:pointer}
+.sport-choice span{font-size:24px}.sport-choice b{font-size:15px}
+.sport-choice.selected{border-color:var(--teal,#0c837e);background:var(--cold-bg,#edf8f6)}
+.sport-active-head{display:flex;flex-direction:column;gap:7px;text-align:center;border-radius:16px;padding:19px;background:var(--cold-bg,#edf8f6)}
+.sport-active-head b{font-size:38px;direction:ltr;font-variant-numeric:tabular-nums}.sport-active-head small{color:var(--muted,#6a7e80)}
+.sport-history-type{font-weight:800}.sport-history-distance{color:var(--cold-ink,#08776a)}
+@media(max-width:350px){.activity-arrival-buttons{grid-template-columns:1fr}.sport-choice{gap:4px}.sport-choice b{font-size:13px}}
+
+
+/* v1.9.1: نافذة «ما الجديد؟» للمرة الأولى مع إبقاء شارة التحديث دائمًا */
+.release-modal-backdrop {
+  position: fixed; inset: 0; z-index: 1999;
+  display: flex; align-items: center; justify-content: center;
+  padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
+  background: rgba(8, 24, 29, .58);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+}
+.release-modal {
+  box-sizing: border-box; width: min(100%, 440px); max-height: min(790px, calc(100dvh - 40px));
+  overflow: auto; overscroll-behavior: contain; background: var(--surface, #fff);
+  color: var(--ink, #142027); border: 1px solid var(--line, #e0e9ed);
+  border-radius: 28px; padding: 26px 23px 21px;
+  box-shadow: 0 26px 90px rgba(0,0,0,.25); text-align: right; direction: rtl;
+  animation: release-pop .22s ease-out both;
+}
+.release-modal-icon { font-size: 36px; line-height: 1; margin-bottom: 10px; }
+.release-modal-overline { font-size: 13px; font-weight: 900; color: var(--cold-ink, #347e91); }
+.release-modal h1 { margin: 6px 0 8px; font-family: var(--font-display, inherit); font-size: clamp(28px, 6.3vw, 34px); line-height: 1.4; font-weight: 900; color: var(--ink); }
+.release-modal-intro { margin: 0 0 17px; font-size: 15px; line-height: 1.9; color: var(--muted, #65767d); }
+.release-modal-list { display: grid; gap: 8px; list-style: none; padding: 0; margin: 0 0 22px; }
+.release-modal-list li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 13px; border: 1px solid var(--line, #e0e9ed); border-radius: 16px; background: color-mix(in srgb, var(--surface, #fff) 88%, var(--cold, #5197af)); }
+.release-feature-emoji { flex: 0 0 31px; font-size: 23px; line-height: 1.5; text-align: center; }
+.release-modal-list strong { display: block; font-size: 16px; line-height: 1.6; color: var(--ink); font-weight: 900; }
+.release-modal-list small { display: block; font-size: 13px; line-height: 1.8; color: var(--muted, #65767d); }
+.release-modal-cta { width: 100%; min-height: 54px; font-size: 17px; font-weight: 900; border-radius: 18px; }
+.release-modal-once { margin: 12px 0 0; text-align: center; font-size: 11px; line-height: 1.5; color: var(--muted, #65767d); }
+@keyframes release-pop { from { opacity:0; transform: translateY(12px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media (max-height: 680px) { .release-modal { padding: 16px; } .release-modal-list { gap: 5px; } .release-modal-list li { padding: 8px 10px; } }
+@media (prefers-reduced-motion: reduce) { .release-modal { animation: none; } }

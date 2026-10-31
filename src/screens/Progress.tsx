@@ -12,6 +12,7 @@ import { PageHeader, useToast } from '../components/ui';
 import { Icon } from '../components/Icon';
 import { useBuddy } from '../lib/buddy';
 import { buildAchievements } from '../lib/achievements';
+import { useSportActivities } from '../lib/sportActivities';
 
 function WeightChart({ series, startWeek, weekStartDay }: { series: Measurement[]; startWeek: string; weekStartDay: number }) {
   const W = 340;
@@ -57,10 +58,16 @@ export default function Progress() {
   const nav = useNavigate();
   const { toast } = useToast();
   const buddy = useBuddy();
+  const sports = useSportActivities();
   const { today, weekStartDay, position, stats, sessions } = d;
   const measurements = d.db?.measurements ?? [];
   const visits = d.db?.visits ?? [];
-  const achievements = buildAchievements(d.sessions, visits, buddy.me?.streak_4of4 ?? d.stats.streak.current, d.stats.weeksComplete);
+  const completedSportsForBadge = sports.records.filter(a => a.ended_at);
+  const badgeDates = [...new Set([...visits.map(v => v.date),...completedSportsForBadge.map(a => a.date)])];
+  const badgeWeeks = new Map<string, number>();
+  for (const day of badgeDates) { const w = weekStartOf(day, 0); badgeWeeks.set(w, (badgeWeeks.get(w) ?? 0) + 1); }
+  const badgeWeeksComplete = [...badgeWeeks.values()].filter(n => n >= 4).length;
+  const achievements = buildAchievements(d.sessions, visits, buddy.me?.streak_4of4 ?? d.stats.streak.current, badgeWeeksComplete);
   const series = useMemo(() => weightSeries(measurements), [measurements]);
   const thisWeek = weekStartOf(today, weekStartDay);
   const current = measurements.find((m) => m.week_start === thisWeek);
@@ -77,6 +84,15 @@ export default function Progress() {
   const endedVisits = visits.filter((v) => !!v.left_at);
   const allVisitSeconds = endedVisits.reduce((sum, v) => sum + Math.max(0, v.duration_seconds), 0);
   const avgVisitSeconds = endedVisits.length ? Math.round(allVisitSeconds / endedVisits.length) : 0;
+  const completedSports = sports.records.filter(a => a.ended_at);
+  const sportSeconds = completedSports.reduce((sum, a) => sum + (a.duration_seconds || 0), 0);
+  const allDates = [...new Set([...visits.map(v => v.date),...completedSports.map(a => a.date)])];
+  const daysByWeek = new Map<string, number>();
+  for (const activityDate of allDates) {
+    const week = weekStartOf(activityDate, 0);
+    daysByWeek.set(week, (daysByWeek.get(week) ?? 0) + 1);
+  }
+  const combinedWeeksComplete = [...daysByWeek.values()].filter(count => count >= 4).length;
 
   function parseNum(s: string): number | null {
     const n = Number(s.replace(',', '.').trim());
@@ -113,6 +129,9 @@ export default function Progress() {
           <div className="stat"><b className="num">{visits.length}</b><span>إجمالي الزيارات</span></div>
           <div className="stat"><b>{durationLabel(allVisitSeconds)}</b><span>إجمالي وقت النادي</span></div>
           <div className="stat"><b>{avgVisitSeconds ? durationLabel(avgVisitSeconds) : '—'}</b><span>متوسط الزيارة</span></div>
+          <div className="stat"><b className="num">{completedSports.length}</b><span>رياضات أخرى</span></div>
+          <div className="stat"><b>{durationLabel(sportSeconds)}</b><span>وقت الرياضات الأخرى</span></div>
+          <div className="stat"><b className="num">{buddy.me?.weekly_sessions ?? 0}/4</b><span>أيام رياضية هذا الأسبوع</span></div>
           <div className="stat"><b className="num">{buddy.me?.streak_4of4 ?? 0}</b><span>سلسلة 4/4</span></div>
         </div>
       </section>
@@ -121,7 +140,7 @@ export default function Progress() {
         <section className="card">
           <div className="row-between" style={{ marginBottom: 10 }}><div><div className="eyebrow">هذا الأسبوع</div><div className="card-title">فريق 45/4</div></div><span className="tag">ملخص أسبوعي</span></div>
           <div className="buddy-period-grid team-three-grid">
-            {buddy.stats.map((b) => <div className="buddy-period-person" key={b.user_id}><span>{b.user_id === buddy.me?.user_id ? 'أنت' : b.display_name}</span><b className="num">{b.weekly_visits}</b><small>زيارة · {durationLabel(b.weekly_visit_seconds)} · {b.weekly_sessions}/4</small></div>)}
+            {buddy.stats.map((b) => <div className="buddy-period-person" key={b.user_id}><span>{b.user_id === buddy.me?.user_id ? 'أنت' : b.display_name}</span><b className="num">{b.weekly_visits}</b><small>نشاط · {durationLabel(b.weekly_visit_seconds)} · {b.weekly_sessions}/4</small></div>)}
           </div>
         </section>
       )}
@@ -184,7 +203,7 @@ export default function Progress() {
         <div className="card-title" style={{ marginBottom: 12 }}>إحصائياتك</div>
         <div className="stats-grid">
           <div className="stat"><b className="num">{S.totalSessions}</b><span>إجمالي الجلسات</span></div>
-          <div className="stat"><b className="num">{S.weeksComplete}</b><span>أسابيع 4/4</span></div>
+          <div className="stat"><b className="num">{combinedWeeksComplete}</b><span>أسابيع 4/4</span></div>
           <div className="stat"><b className="num">{S.cardioMinutes}</b><span>دقائق كارديو</span></div>
           <div className="stat"><b className="num">{S.adherence != null ? `${S.adherence}%` : '—'}</b><span>نسبة الالتزام</span></div>
           <div className="stat"><b className="num">{S.streak.current}</b><span>سلسلة حالية (أسابيع)</span></div>

@@ -21,6 +21,8 @@ import { dayIcon } from '../lib/profile';
 import { useMyTeamProfile } from '../lib/teamProfile';
 import { enablePush, getPushState, notifyBuddyArrival, notifyBuddyFourOfFour, notifyBuddyLeft, notifyBuddyReaction, type PushState } from '../lib/push';
 import { downloadGymSummaryCard, shareGymSummary, type GymSummaryShare } from '../lib/shareCard';
+import { useSportActivities, sportLabel } from '../lib/sportActivities';
+import { SportActivitySheet } from '../components/SportActivitySheet';
 
 function attendanceWeekCopy(count: number) {
   const left = Math.max(0, WEEKLY_GOAL - count);
@@ -53,6 +55,8 @@ export default function Home() {
   const [pickOpen, setPickOpen] = useState(false);
   const [shortOpen, setShortOpen] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
+  const [sportOpen, setSportOpen] = useState(false);
+  const sports = useSportActivities();
   const [exitSummary, setExitSummary] = useState<GymSummaryShare | null>(null);
   const [lastExitId, setLastExitId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -60,7 +64,11 @@ export default function Home() {
 
   const myProfile = useMyTeamProfile();
   const name = myProfile.display_name || ACTIVE_PROGRAM.defaultName;
-  const { today, info, attendanceInfo, suggested, position, stats, settings, curWeekStart, trainedToday } = d;
+  const { today, info, attendanceInfo: gymAttendance, suggested, position, stats, settings, curWeekStart, trainedToday } = d;
+  // يوم واحد يحتسب مرة واحدة مهما تعددت زيارات النادي أو الرياضات الخارجية.
+  const sportDates = sports.records.filter((a) => a.ended_at != null && a.date >= curWeekStart && a.date <= addDaysISO(curWeekStart, 6)).map((a) => a.date);
+  const attendanceDates = [...new Set([...gymAttendance.dates, ...sportDates])].sort();
+  const attendanceInfo = { ...gymAttendance, dates: attendanceDates, count: Math.min(WEEKLY_GOAL, attendanceDates.length), complete: attendanceDates.length >= WEEKLY_GOAL };
   const live = db?.live ?? null;
   const activeVisit = db?.visits.find((v) => !v.left_at) ?? null;
   const nowMs = useNow(15_000, !!activeVisit);
@@ -73,8 +81,16 @@ export default function Home() {
   const [memberOpen, setMemberOpen] = useState<BuddyStat | null>(null);
   const coachPhoto = myProfile.avatar_url;
   const [pushState, setPushState] = useState<PushState>('prompt');
-  const achievements = buildAchievements(db?.sessions ?? [], db?.visits ?? [], buddyMe?.streak_4of4 ?? stats.streak.current, stats.weeksComplete);
-  const isRestDay = d.advice.kind === 'rest' && !trainedToday && !info.complete;
+  const achievementDates = [...new Set([...(db?.visits ?? []).map(v => v.date),...sports.records.filter(a => a.ended_at).map(a => a.date)])];
+  const weekGroups = new Map<string, number>();
+  for (const activityDate of achievementDates) {
+    const dayNum = new Date(`${activityDate}T12:00:00Z`).getUTCDay();
+    const weekStart = addDaysISO(activityDate, -dayNum);
+    weekGroups.set(weekStart, (weekGroups.get(weekStart) ?? 0) + 1);
+  }
+  const achievementWeeksComplete = [...weekGroups.values()].filter(v => v >= WEEKLY_GOAL).length;
+  const achievements = buildAchievements(db?.sessions ?? [], db?.visits ?? [], buddyMe?.streak_4of4 ?? stats.streak.current, achievementWeeksComplete);
+  const isRestDay = d.advice.kind === 'rest' && !trainedToday && !sportDates.includes(today) && !info.complete;
   const todayIcon = dayIcon(suggested, isRestDay);
 
   useEffect(() => { void getPushState().then(setPushState); }, []);
@@ -85,6 +101,7 @@ export default function Home() {
   }, [lastExitId]);
 
   const arriveAtGym = async () => {
+    if (sports.active) { toast('أنهِ الرياضة الأخرى أولًا قبل تسجيل دخول النادي.'); return; }
     const wasAttendanceCount = attendanceInfo.count;
     const alreadyCountedToday = attendanceInfo.dates.includes(today);
     const v = startGymVisit();
@@ -177,11 +194,17 @@ export default function Home() {
   const offline = sync.state === 'offline' || (typeof navigator !== 'undefined' && !navigator.onLine);
 
   /* ---------- بطاقة تنبيه واحدة على الأكثر ---------- */
-  const gap = stats.lastSessionDate ? diffDaysISO(stats.lastSessionDate, today) : 0;
+  const recentCompletedSport = sports.records.find(a => a.ended_at)?.date ?? null;
+  const activityDatesForGap = [stats.lastSessionDate, recentCompletedSport].filter((x): x is string => !!x).sort();
+  const mostRecentSportOrGym = activityDatesForGap.length ? activityDatesForGap[activityDatesForGap.length - 1] : null;
+  const gap = mostRecentSportOrGym ? diffDaysISO(mostRecentSportOrGym, today) : 0;
   const prevWeekStart = addDaysISO(d.curWeekStart, -7);
-  const prevAttendance = attendanceWeekInfo(db?.visits ?? [], prevWeekStart);
+  const prevGymAttendance = attendanceWeekInfo(db?.visits ?? [], prevWeekStart);
+  const prevActivityDates = sports.records.filter(a => a.ended_at && a.date >= prevWeekStart && a.date <= addDaysISO(prevWeekStart,6)).map(a => a.date);
+  const prevJoined = [...new Set([...prevGymAttendance.dates, ...prevActivityDates])];
+  const prevAttendance = { ...prevGymAttendance, count: Math.min(WEEKLY_GOAL,prevJoined.length), complete: prevJoined.length >= WEEKLY_GOAL };
   const prevKey = `wk:${prevWeekStart}`;
-  const hasPrevWeek = prevWeekStart >= position.startWeek && (db?.visits ?? []).length > 0;
+  const hasPrevWeek = prevWeekStart >= position.startWeek && ((db?.visits ?? []).length > 0 || sports.records.length > 0);
   const recap = monthRecapTarget(today);
   const recapKey = recap ? `recap:${recap.monthStart}` : '';
 
@@ -200,7 +223,7 @@ export default function Home() {
         </div>
       </div>
     );
-  } else if (stats.lastSessionDate && gap >= 10) {
+  } else if (mostRecentSportOrGym && gap >= 10) {
     notice = (
       <div className="card card-hot">
         <div className="card-title">غبتَ فترة؟ لا بأس</div>
@@ -210,7 +233,7 @@ export default function Home() {
         </button>
       </div>
     );
-  } else if (hasPrevWeek && !prevAttendance.complete && !settings.dismissed[prevKey] && prevAttendance.visits.length > 0) {
+  } else if (hasPrevWeek && !prevAttendance.complete && !settings.dismissed[prevKey] && prevAttendance.count > 0) {
     const pm = pastAttendanceCopy(prevAttendance.count);
     notice = (
       <div className="card card-flat">
@@ -321,10 +344,16 @@ export default function Home() {
           </>
         ) : (
           <>
-            <button type="button" className="gym-arrive-btn" onClick={arriveAtGym}>
-              <span>وصلت النادي</span><Icon name="check" size={26} strokeWidth={3} />
-            </button>
-            <div className="gym-checkin-meta">اضغطها عند وصولك فقط — الحضور مستقل عن برنامج التمارين، و4/4 يُحسب من أيام حضورك.</div>
+            <div className="activity-arrival-buttons">
+              <button type="button" className="gym-arrive-btn" disabled={!!sports.active} onClick={arriveAtGym}>
+                <span>وصلت النادي</span><Icon name="check" size={26} strokeWidth={3} />
+              </button>
+              <button type="button" className="sport-open-btn" onClick={() => setSportOpen(true)}>
+                <span>🚶 رياضة أخرى</span><small>{sports.active ? `جارٍ: ${sportLabel(sports.active)}` : 'مشي · دراجة · سباحة وأكثر'}</small>
+              </button>
+            </div>
+            <div className="gym-checkin-meta">سواء النادي أو رياضة أخرى: كل تاريخ يُحسب يومًا واحدًا ضمن 4/4.</div>
+            {sports.active && <div className="sport-live-indicator" role="status">💪 نشاط جارٍ: <b>{sportLabel(sports.active)}</b> · <button className="link-btn" onClick={() => setSportOpen(true)}>إكمال / إنهاء</button></div>}
             {lastEndedToday && (
               <div className="gym-last-visit">
                 آخر زيارة اليوم: {timeLabel(lastEndedToday.arrived_at)} ← {timeLabel(lastEndedToday.left_at)} · <b>{durationLabel(lastEndedToday.duration_seconds)}</b>
@@ -576,8 +605,8 @@ export default function Home() {
                     <div><div className="buddy-name">{b.user_id === buddyMe.user_id ? 'أنت' : b.display_name}{b.in_gym ? ' · بالنادي' : ''}</div><small>{b.user_id.startsWith('pending:') ? 'بانتظار أول دخول' : 'اضغط لعرض الزيارات'}</small></div>
                   </div>
                   <div className="buddy-score num">{b.weekly_sessions}/4</div>
-                  <div className="buddy-mini"><span>الزيارات</span><b className="num">{b.weekly_visits}</b></div>
-                  <div className="buddy-mini"><span>وقت النادي</span><b>{durationLabel(b.weekly_visit_seconds)}</b></div>
+                  <div className="buddy-mini"><span>النشاطات</span><b className="num">{b.weekly_visits}</b></div>
+                  <div className="buddy-mini"><span>وقت النشاط</span><b>{durationLabel(b.weekly_visit_seconds)}</b></div>
                   <div className="buddy-mini"><span>سلسلة 4/4 🔥</span><b className="num">{b.streak_4of4}</b></div>
                 </button>
               ))}
@@ -681,6 +710,16 @@ export default function Home() {
       <DayPickerSheet open={pickOpen} onClose={() => setPickOpen(false)} d={d} onPick={(id) => act.startDay(id)} />
       <ShortSheet open={shortOpen} onClose={() => setShortOpen(false)} d={d} onStart={(id, m) => act.startDay(id, m)} />
       <ExtraSheet open={extraOpen} onClose={() => setExtraOpen(false)} onStart={act.startExtra} />
+      <SportActivitySheet
+        open={sportOpen} onClose={() => setSportOpen(false)} sports={sports} gymActive={!!activeVisit}
+        afterFinish={() => {
+          // عند اكتمال الرابع بنشاط خارج النادي يتم إرسال إنجاز 4/4 بعد الحفظ.
+          if (sports.active && attendanceInfo.count === WEEKLY_GOAL - 1 && !attendanceInfo.dates.includes(today)) {
+            void notifyBuddyFourOfFour(curWeekStart).catch(() => undefined);
+          }
+          void buddy.refresh();
+        }}
+      />
     </div>
   );
 }

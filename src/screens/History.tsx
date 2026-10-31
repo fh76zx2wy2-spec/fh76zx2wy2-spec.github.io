@@ -10,6 +10,7 @@ import { Icon } from '../components/Icon';
 import { fetchBuddyAttendance, useBuddy, type BuddyAttendanceDay, type BuddyStat } from '../lib/buddy';
 import { deleteGymVisit, updateGymVisit } from '../lib/store';
 import { syncNow } from '../lib/sync';
+import { useSportActivities, sportLabel } from '../lib/sportActivities';
 
 type Filter = 'all' | 'base' | 'extra';
 type Period = 'week' | 'month' | 'all';
@@ -71,6 +72,7 @@ export default function History() {
   const d = useDerived();
   const nav = useNavigate();
   const buddy = useBuddy();
+  const sports = useSportActivities();
   const { toast } = useToast();
   const [filter, setFilter] = useState<Filter>('all');
   const [period, setPeriod] = useState<Period>('week');
@@ -136,7 +138,7 @@ export default function History() {
 
       <section className="card history-compare-card">
         <div className="row-between">
-          <div><div className="eyebrow">فريق 45/4</div><div className="card-title">كم رحنا للنادي؟</div></div>
+          <div><div className="eyebrow">فريق 45/4</div><div className="card-title">كم مارسنا الرياضة؟</div></div>
           <Link to="/calendar" className="btn btn-sm btn-soft"><Icon name="calendar" size={16} /> التقويم</Link>
         </div>
         <div className="seg" role="group" aria-label="الفترة" style={{ marginTop: 12 }}>
@@ -146,7 +148,7 @@ export default function History() {
           <div className="buddy-period-grid team-three-grid">
             {buddy.stats.map((b) => {
               const st = statForPeriod(b, period);
-              return <div className="buddy-period-person" key={b.user_id}><span>{b.user_id === buddy.me?.user_id ? 'أنت' : b.display_name}</span><b className="num">{st.visits}</b><small>زيارة · {durationLabel(st.seconds)}</small></div>;
+              return <div className="buddy-period-person" key={b.user_id}><span>{b.user_id === buddy.me?.user_id ? 'أنت' : b.display_name}</span><b className="num">{st.visits}</b><small>نشاط · {durationLabel(st.seconds)}</small></div>;
             })}
           </div>
         ) : <div className="muted" style={{ marginTop: 14 }}>شغّل تحديث Supabase الجديد لإظهار مقارنة الفريق.</div>}
@@ -175,6 +177,17 @@ export default function History() {
             })}
           </div>
         )}
+      </section>
+
+      <section className="card pad-0">
+        <div className="history-section-head"><div><div className="eyebrow">رياضات خارج النادي</div><div className="card-title">سجل الأنشطة الأخرى</div></div><span className="tag">{sports.records.filter(a => a.ended_at).length} نشاط</span></div>
+        {sports.error && <div className="note-box hot">{sports.error}</div>}
+        {sports.records.length === 0 && !sports.loading && <div className="muted" style={{ padding: 18 }}>لم تسجّل رياضة خارج النادي بعد.</div>}
+        {sports.records.filter(a => a.ended_at).slice(0, 30).map((a) => <div className="list-row" key={a.id}>
+          <span className="ic cold">🚶</span>
+          <div className="grow"><div className="sport-history-type">{sportLabel(a)} · {weekdayName(a.date)} {formatGreg(a.date, { year: false })}</div>
+          <div className="s">{durationLabel(a.duration_seconds)}{a.distance_km != null ? ` · ${a.distance_km} كم` : ''}</div></div>
+        </div>)}
       </section>
 
       <section className="card pad-0">
